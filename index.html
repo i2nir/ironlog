@@ -41,11 +41,12 @@ body{display:flex;justify-content:center;}
 .tab{flex:1;text-align:center;padding:11px 0;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-left:none;border-right:none;border-top:none;}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue);}
 
-.day-tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-bottom:0.5px solid var(--border);}
-.day-tab{padding:10px 4px 8px;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.day-tabs{display:flex;background:var(--surface);border-bottom:0.5px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.day-tabs::-webkit-scrollbar{display:none;}
+.day-tab{flex-shrink:0;padding:10px 12px 8px;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;min-width:72px;}
 .day-tab.active{border-bottom-color:var(--blue);}
-.day-tab .icon{font-size:20px;display:block;margin-bottom:3px;}
-.day-tab .dlabel{font-size:12px;font-weight:500;color:var(--text);}
+.day-tab .icon{font-size:18px;display:block;margin-bottom:3px;}
+.day-tab .dlabel{font-size:11px;font-weight:500;color:var(--text);}
 .day-tab.active .dlabel{color:var(--blue);}
 .day-tab .dsub{font-size:10px;color:var(--text3);line-height:1.3;}
 
@@ -55,9 +56,13 @@ body{display:flex;justify-content:center;}
 .date-row input[type=date]:focus{border-color:var(--blue);}
 
 .ex-card{background:var(--surface);border-radius:var(--radius);margin:0 10px 10px;border:0.5px solid var(--border);overflow:hidden;}
-.ex-header{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 14px 8px;gap:8px;}
+.ex-header{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px 8px;gap:8px;}
 .ex-name{font-size:15px;font-weight:500;color:var(--blue);}
-.ex-scheme{display:inline-block;font-size:11px;background:var(--surface2);color:var(--text2);border-radius:var(--pill);padding:2px 9px;margin-top:4px;font-weight:500;font-family:'DM Mono',monospace;}
+.ex-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.ex-scheme{display:inline-block;font-size:11px;background:var(--surface2);color:var(--text2);border-radius:var(--pill);padding:2px 9px;font-weight:500;font-family:'DM Mono',monospace;}
+.ex-rest{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text3);padding:2px 8px;border-radius:var(--pill);background:var(--surface2);}
+.warmup-block{padding:6px 14px 8px;background:var(--surface2);border-top:0.5px solid var(--border);font-size:11px;color:var(--text3);line-height:1.7;}
+.warmup-block strong{color:var(--text2);font-weight:500;display:block;margin-bottom:2px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
 .add-btn{border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;font-size:12px;font-weight:500;color:var(--text2);background:var(--surface);cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s;flex-shrink:0;}
 .add-btn:hover{background:var(--surface2);}
 .serie-header{display:grid;grid-template-columns:26px 1fr 1fr 30px;gap:6px;padding:4px 14px 6px;border-top:0.5px solid var(--border);}
@@ -72,6 +77,9 @@ body{display:flex;justify-content:center;}
 .last-hint{font-size:10px;color:var(--text3);text-align:center;font-family:'DM Mono',monospace;}
 .del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;text-align:center;padding:4px;border-radius:6px;transition:color .15s;display:flex;align-items:center;justify-content:center;}
 .del-btn:hover{color:var(--red);}
+
+/* Timer */
+
 
 .save-bar{padding:12px 10px 36px;background:var(--bg);}
 .save-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;}
@@ -98,9 +106,9 @@ body{display:flex;justify-content:center;}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:13px;}
 .empty i{font-size:32px;display:block;margin-bottom:10px;}
 
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-end;justify-content:center;padding:0;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
-.sheet{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:430px;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,16px);}
+.sheet{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:430px;padding-bottom:env(safe-area-inset-bottom,16px);}
 .sheet-hd{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .sheet-title{font-size:15px;font-weight:500;}
 .sheet-close{background:none;border:none;cursor:pointer;color:var(--text2);font-size:20px;padding:2px;display:flex;align-items:center;}
@@ -144,10 +152,11 @@ body{display:flex;justify-content:center;}
       <div class="hist-filters">
         <select id="hf-day" onchange="renderHistory()">
           <option value="">Tous les jours</option>
-          <option value="0">Jour 1 – Bas du corps</option>
-          <option value="1">Jour 2 – Haut du corps</option>
-          <option value="2">Jour 3 – Bas du corps</option>
-          <option value="3">Jour 4 – Haut du corps</option>
+          <option value="0">Jour 1 – Push</option>
+          <option value="1">Jour 2 – Jambes A</option>
+          <option value="2">Jour 3 – Pull</option>
+          <option value="3">Jour 4 – Upper</option>
+          <option value="4">Jour 5 – Jambes B</option>
         </select>
         <select id="hf-ex" onchange="renderHistory()">
           <option value="">Tous les exercices</option>
@@ -163,7 +172,7 @@ body{display:flex;justify-content:center;}
   <div class="sheet">
     <div class="sheet-hd">
       <span class="sheet-title">Gérer les données</span>
-      <button class="sheet-close" onclick="closeSheet()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+      <button class="sheet-close" onclick="closeSheet()"><i class="ti ti-x"></i></button>
     </div>
     <div class="sheet-body">
       <p>Exporte tes données pour les sauvegarder ou les transférer sur un autre appareil.</p>
@@ -188,28 +197,123 @@ body{display:flex;justify-content:center;}
 
 <script>
 const DAYS=[
-  {label:'Jour 1',sub:'Bas du corps',icon:'🦵',exercises:[
-    {n:'Presse à cuisses',s:'4×8-12'},{n:'Leg curl',s:'3×10-15'},
-    {n:'Fentes arrière (DB)',s:'3×10/jambe'},{n:'Mollets',s:'4×12-20'},{n:'Gainage',s:'3×30-45s'}
-  ]},
-  {label:'Jour 2',sub:'Haut du corps',icon:'🏋️',exercises:[
-    {n:'Tirage horizontal neutre',s:'4×10-12'},{n:'Tirage vertical neutre',s:'3×10'},
-    {n:'T-barre',s:'3×8-12'},{n:'Reverse fly machine',s:'3×15'},{n:'Curl biceps',s:'3×10-12'}
-  ]},
-  {label:'Jour 3',sub:'Bas du corps',icon:'🔥',exercises:[
-    {n:'RDL barre',s:'4×8-10'},{n:'Hip thrust barre',s:'4×8-12'},{n:'Bulgarian split squat',s:'3×8-12/jambe'}
-  ]},
-  {label:'Jour 4',sub:'Haut du corps',icon:'💪',exercises:[
-    {n:'Développé incliné haltères',s:'3×10'},{n:'Chest press',s:'3×10-12'},
-    {n:'Fly machine',s:'2-3×12-15'},{n:'Élévations latérales',s:'3×15'},
-    {n:'Extension triceps 1 bras',s:'3×12'},{n:'Progression debout',s:'—'}
-  ]},
+  {
+    label:'Jour 1',sub:'Push',icon:'🫸',
+    exercises:[
+      {n:'Développé incliné haltères',s:'3×8-12',rest:'2 min',
+       warmup:'2 séries légères : 20 lb × 10–12, puis 25 lb × 10–12',
+       defaultLb:30},
+      {n:'Chest press',s:'3×8-12',rest:'2 min',
+       warmup:'30 lb × 10',
+       defaultLb:50},
+      {n:'Fly machine',s:'2×10-15',rest:'1,5 min',
+       warmup:null,
+       defaultLb:50},
+      {n:'Élévations latérales',s:'3×12-15',rest:'1 min',
+       warmup:null,
+       defaultLb:15},
+      {n:'Extension triceps',s:'3×10-15',rest:'1,5 min',
+       warmup:null,
+       defaultLb:22.5},
+    ]
+  },
+  {
+    label:'Jour 2',sub:'Jambes A',icon:'🦵',
+    exercises:[
+      {n:'Leg press',s:'4×6-10',rest:'2 min',
+       warmup:'1–3 séries progressives : 100 lb × 10, 140 lb × 10',
+       defaultLb:160},
+      {n:'Leg extension',s:'2×10-15',rest:'1,5 min',
+       warmup:null,
+       defaultLb:40},
+      {n:'Leg curl',s:'3×8-12',rest:'1,5 min',
+       warmup:null,
+       defaultLb:50},
+      {n:'Mollets machine',s:'4×10-15',rest:'1 min',
+       warmup:null,
+       defaultLb:80},
+      {n:'Abdos',s:'3×10-15',rest:'1 min',
+       warmup:null,
+       defaultLb:null},
+    ]
+  },
+  {
+    label:'Jour 3',sub:'Pull',icon:'🫷',
+    exercises:[
+      {n:'Tirage horizontal neutre',s:'3×8-12',rest:'2 min',
+       warmup:'55 lb × 10–12, puis 70 lb × 5–8',
+       defaultLb:85},
+      {n:'Tirage vertical neutre',s:'3×8-12',rest:'2 min',
+       warmup:'40 lb × 10–12',
+       defaultLb:70},
+      {n:'T-barre',s:'2×8-12',rest:'2 min',
+       warmup:'25 lb × 10–12, puis 35 lb × 5–8',
+       defaultLb:45},
+      {n:'Reverse fly machine',s:'3×10-15',rest:'1 min',
+       warmup:null,
+       defaultLb:40},
+      {n:'Curl biceps',s:'3×8-12',rest:'1,5 min',
+       warmup:null,
+       defaultLb:20},
+      {n:'Curl marteau',s:'2×10-12',rest:'1,5 min',
+       warmup:null,
+       defaultLb:null},
+    ]
+  },
+  {
+    label:'Jour 4',sub:'Upper',icon:'💪',
+    exercises:[
+      {n:'Chest press',s:'2×8-12',rest:'2 min',
+       warmup:'30 lb × 10',
+       defaultLb:50},
+      {n:'Fly machine',s:'2×10-15',rest:'1,5 min',
+       warmup:null,
+       defaultLb:50},
+      {n:'Tirage horizontal neutre',s:'2×8-12',rest:'2 min',
+       warmup:'55 lb × 10',
+       defaultLb:85},
+      {n:'Tirage vertical neutre',s:'2×8-12',rest:'2 min',
+       warmup:'40 lb × 10',
+       defaultLb:70},
+      {n:'Élévations latérales',s:'2×12-15',rest:'1 min',
+       warmup:null,
+       defaultLb:15},
+      {n:'Reverse fly machine',s:'2×12-15',rest:'1 min',
+       warmup:null,
+       defaultLb:40},
+      {n:'Curl biceps',s:'2×10-12',rest:'1,5 min',
+       warmup:null,
+       defaultLb:20},
+      {n:'Extension triceps',s:'2×10-15',rest:'1,5 min',
+       warmup:null,
+       defaultLb:22.5},
+    ]
+  },
+  {
+    label:'Jour 5',sub:'Jambes B',icon:'🔥',
+    exercises:[
+      {n:'Back squat',s:'4×6-10',rest:'2 min',
+       warmup:'2–3 séries progressives : barre vide, puis 10 lb',
+       defaultLb:25},
+      {n:'Hip thrust barre',s:'3×8-12',rest:'2 min',
+       warmup:'1–2 séries si nécessaire',
+       defaultLb:null},
+      {n:'RDL barre',s:'3×8-12',rest:'2 min',
+       warmup:'1–2 séries progressives',
+       defaultLb:null},
+      {n:'Mollets debout',s:'4×10-15',rest:'1 min',
+       warmup:null,
+       defaultLb:null},
+      {n:'Abdos',s:'3×10-15',rest:'1 min',
+       warmup:null,
+       defaultLb:null},
+    ]
+  },
 ];
 
 let curDay=0,state={};
 let sessions=[];
 try{sessions=JSON.parse(localStorage.getItem('il_v2')||'[]')}catch{}
-
 function save(){try{localStorage.setItem('il_v2',JSON.stringify(sessions))}catch{}}
 function today(){return new Date().toISOString().split('T')[0]}
 function fmtDate(s){
@@ -224,7 +328,10 @@ buildState(0);renderDayTabs();renderExercises();renderHistFilter();
 
 function buildState(day){
   state={};
-  DAYS[day].exercises.forEach(ex=>{state[ex.n]=[{lb:'',reps:''}];});
+  DAYS[day].exercises.forEach(ex=>{
+    const lb=ex.defaultLb!=null?ex.defaultLb:'';
+    state[ex.n]=[{lb:String(lb),reps:''}];
+  });
 }
 
 function renderDayTabs(){
@@ -249,14 +356,21 @@ function getLastSets(exName){
   return null;
 }
 
+
 function renderExercises(){
   const wrap=document.getElementById('exercises-list');
   wrap.innerHTML='';
   DAYS[curDay].exercises.forEach(ex=>{
     const sets=state[ex.n];
     const last=getLastSets(ex.n);
+    const cardId='card-'+btoa(encodeURIComponent(ex.n)).replace(/[^a-zA-Z0-9]/g,'');
     const card=document.createElement('div');
     card.className='ex-card';
+    card.id=cardId;
+
+    const warmupHtml=ex.warmup
+      ?`<div class="warmup-block"><strong>Échauffement</strong>${ex.warmup}</div>`:'';
+
     const setsHtml=sets.map((s,si)=>{
       const lLb=last&&last[si]?last[si].lb:'';
       const lReps=last&&last[si]?last[si].reps:'';
@@ -272,12 +386,21 @@ function renderExercises(){
         <button class="del-btn" onclick="delSet('${enc}',${si})" aria-label="Supprimer"><i class="ti ti-x" aria-hidden="true" style="font-size:14px"></i></button>
       </div>`;
     }).join('');
-    card.innerHTML=`<div class="ex-header">
-      <div><div class="ex-name">${ex.n}</div><span class="ex-scheme">${ex.s}</span></div>
-      <button class="add-btn" onclick="addSet('${encodeURIComponent(ex.n)}')">+ série</button>
-    </div>
-    <div class="serie-header"><span>#</span><span>LB</span><span>REPS</span><span></span></div>
-    ${setsHtml}`;
+
+    card.innerHTML=`
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">${ex.n}</div>
+          <div class="ex-meta">
+            <span class="ex-scheme">${ex.s}</span>
+            ${ex.rest?`<span class="ex-rest"><i class="ti ti-clock" aria-hidden="true" style="font-size:11px"></i> ${ex.rest}</span>`:''}
+          </div>
+        </div>
+        <button class="add-btn" onclick="addSet('${encodeURIComponent(ex.n)}')">+ série</button>
+      </div>
+      ${warmupHtml}
+      <div class="serie-header"><span>#</span><span>LB</span><span>REPS</span><span></span></div>
+      ${setsHtml}`;
     wrap.appendChild(card);
   });
 }
@@ -289,12 +412,17 @@ function setState(input){
 }
 function addSet(enc){
   const n=decodeURIComponent(enc);
-  if(state[n]){state[n].push({lb:'',reps:''});renderExercises();}
+  if(state[n]){
+    const last=state[n][state[n].length-1];
+    state[n].push({lb:last?last.lb:'',reps:''});
+    renderExercises();
+  }
 }
 function delSet(enc,si){
   const n=decodeURIComponent(enc);
   if(state[n]&&state[n].length>1){state[n].splice(si,1);renderExercises();}
 }
+
 
 function saveSession(){
   const date=document.getElementById('session-date').value;
@@ -303,7 +431,7 @@ function saveSession(){
     sets:state[ex.n].filter(s=>s.lb!==''||s.reps!=='').map(s=>({lb:parseFloat(s.lb)||0,reps:parseInt(s.reps)||0}))
   })).filter(e=>e.sets.length>0);
   if(!exercises.length){showToast('Aucune donnée saisie','warn');return;}
-  sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label,ts:Date.now(),exercises});
+  sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises});
   save();showToast('Séance sauvegardée !');
   buildState(curDay);renderExercises();renderHistFilter();
 }
@@ -330,9 +458,7 @@ function renderHistFilter(){
   const prev=sel.value;
   sel.innerHTML='<option value="">Tous les exercices</option>';
   [...new Set(sessions.flatMap(s=>s.exercises.map(e=>e.name)))].forEach(n=>{
-    const o=document.createElement('option');
-    o.value=n;o.textContent=n;if(n===prev)o.selected=true;
-    sel.appendChild(o);
+    const o=document.createElement('option');o.value=n;o.textContent=n;if(n===prev)o.selected=true;sel.appendChild(o);
   });
 }
 
@@ -362,8 +488,8 @@ function renderHistory(){
       <div class="hist-session-hd">
         <span class="hist-date">${fmtDate(sess.date)}</span>
         <div style="display:flex;align-items:center;gap:10px">
-          <span class="hist-day-label">${sess.dayLabel}</span>
-          <button class="hist-del" onclick="deleteSession(${origIdx})" aria-label="Supprimer séance"><i class="ti ti-trash" aria-hidden="true"></i></button>
+          <span class="hist-day-label">${sess.dayLabel||''}</span>
+          <button class="hist-del" onclick="deleteSession(${origIdx})" aria-label="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button>
         </div>
       </div>
       ${exHtml}
@@ -386,7 +512,6 @@ function exportJSON(){
   const a=document.createElement('a');a.href=url;a.download='ironlog-backup.json';a.click();
   URL.revokeObjectURL(url);closeSheet();
 }
-
 function importJSON(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
@@ -404,12 +529,11 @@ function importJSON(e){
   };
   reader.readAsText(file);e.target.value='';
 }
-
 function exportCSV(){
   if(!sessions.length){showToast('Aucune donnée','warn');return;}
   let csv='Date,Jour,Exercice,Série,LB,Reps\n';
   sessions.forEach(s=>s.exercises.forEach(ex=>ex.sets.forEach((set,i)=>{
-    csv+=`${s.date},"${s.dayLabel}","${ex.name}",${i+1},${set.lb},${set.reps}\n`;
+    csv+=`${s.date},"${s.dayLabel||''}","${ex.name}",${i+1},${set.lb},${set.reps}\n`;
   })));
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
