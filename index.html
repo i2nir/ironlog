@@ -127,9 +127,11 @@ body{display:flex;justify-content:center;}
 .work-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:4px 14px 2px;border-top:0.5px solid var(--border);}
 
 /* Save */
-.save-bar{padding:14px 12px 40px;}
+.save-bar{padding:14px 12px 40px;display:flex;flex-direction:column;gap:10px;}
 .save-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:17px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;}
 .save-btn:hover{background:var(--blue-dark);}
+.record-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--surface);color:var(--text2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;}
+.record-btn:hover{background:var(--surface2);}
 
 .toast{margin:0 12px 10px;padding:11px 16px;background:var(--green-light);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:15px;color:var(--green);text-align:center;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
@@ -232,6 +234,7 @@ body{display:flex;justify-content:center;}
   <div id="exercises-list"></div>
   <div class="toast" id="toast"></div>
   <div class="save-bar">
+    <button class="record-btn" onclick="recordSession()"><i class="ti ti-bookmark" style="font-size:17px"></i>Enregistrer en cours</button>
     <button class="save-btn" onclick="saveSession()"><i class="ti ti-device-floppy" style="font-size:18px"></i>Sauvegarder la séance</button>
   </div>
 </div>
@@ -444,12 +447,15 @@ function toggleMute(){
 
 // ─── RECOMMENDATION ─────────────────────────────────────
 function calcReco(ex,workSets){
+  // Find last SAVED session for this exercise on the current day
+  const lastSets=getLastWorkSetsForDay(ex.n,curDay);
+  if(!lastSets||!lastSets.length) return null;
   const[rMin,rMax]=parseRange(ex.s);
-  const reps=workSets.map(s=>parseInt(s.reps)).filter(r=>!isNaN(r)&&r>0);
-  if(!reps.length)return null;
-  const lb=parseFloat(workSets[0]?.lb)||0;
-  if(reps.length===workSets.length&&reps.every(r=>r>=rMax))return{type:'up',label:`🟢 ↑ Augmenter à ${lb+5} lb`,next:lb+5};
-  if(reps.some(r=>r<rMin))return{type:'down',label:`🔴 ↓ Réduire — ${lb} lb`,next:lb};
+  const reps=lastSets.map(s=>parseInt(s.reps)).filter(r=>!isNaN(r)&&r>0);
+  if(!reps.length) return null;
+  const lb=parseFloat(lastSets[0]?.lb)||0;
+  if(reps.length===lastSets.length&&reps.every(r=>r>=rMax)) return{type:'up',label:`🟢 ↑ Augmenter à ${lb+5} lb`,next:lb+5};
+  if(reps.some(r=>r<rMin)) return{type:'down',label:`🔴 ↓ Réduire — ${lb} lb`,next:lb};
   return{type:'hold',label:`⚪ Maintenir — ${lb} lb`,next:lb};
 }
 function indEmoji(s){return s==='up'?'🟢':s==='down'?'🔴':'⚪';}
@@ -552,7 +558,6 @@ function renderExercises(){
 
 function onRepsChange(input,enc,restSecs){
   setS(input);
-  updateRecoBlock(enc);
   if(input.value&&parseInt(input.value)>0) startTimer(restSecs);
 }
 function setS(input){
@@ -581,10 +586,37 @@ function saveSession(){
     return{name:ex.n,sets,warmupSets,comment:st.comment||'',variant:st.variant||null};
   }).filter(e=>e.sets.length>0||e.warmupSets.length>0);
   if(!exercises.length){showToast('Aucune donnée saisie','warn');return;}
-  sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises});
+  // Replace draft if exists for same day+date, otherwise push
+  const draftIdx=sessions.findIndex(s=>s.date===date&&s.day===curDay&&s.draft);
+  if(draftIdx>=0){
+    sessions[draftIdx]={date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises};
+  } else {
+    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises});
+  }
   save();showToast('Séance sauvegardée !');stopTimer();
   buildState(curDay);renderExercises();renderHistFilter();
 }
+// Enregistrer en cours — sauvegarde sans réinitialiser les champs
+function recordSession(){
+  const date=document.getElementById('session-date').value;
+  const exercises=DAYS[curDay].exercises.map(ex=>{
+    const st=state[ex.n];
+    const sets=st.work.filter(s=>s.lb!==''||s.reps!=='').map(s=>({lb:parseFloat(s.lb)||0,reps:parseInt(s.reps)||0,ind:s.ind||'none'}));
+    const warmupSets=st.warmup.filter(s=>s.lb!==''||s.reps!=='').map(s=>({lb:parseFloat(s.lb)||0,reps:parseInt(s.reps)||0,warmup:true}));
+    return{name:ex.n,sets,warmupSets,comment:st.comment||'',variant:st.variant||null};
+  }).filter(e=>e.sets.length>0||e.warmupSets.length>0);
+  if(!exercises.length){showToast('Aucune donnée à enregistrer','warn');return;}
+  // Find existing draft for same day+date and update it, or create new
+  const existing=sessions.findIndex(s=>s.date===date&&s.day===curDay&&s.draft);
+  if(existing>=0){
+    sessions[existing]={...sessions[existing],exercises,ts:Date.now()};
+  } else {
+    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises,draft:true});
+  }
+  save();showToast('Enregistré ✓ — continue ta séance !');
+  renderHistFilter();
+}
+
 function showToast(msg,type){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=type==='warn'?'var(--red-light)':'var(--green-light)';
