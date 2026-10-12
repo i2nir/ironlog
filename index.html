@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
-<title>IronLog — Workout Tracker</title>
+<title>IronLog — Carnet d’entraînement</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -20,12 +20,7 @@
   --text:#1a1a18;--text2:#5F5E5A;--text3:#888780;
   --radius:12px;--radius-sm:8px;--pill:20px;
 }
-@media(prefers-color-scheme:dark){:root{
-  --bg:#1a1a18;--surface:#242422;--surface2:#2c2c2a;
-  --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
-  --text:#f0ede8;--text2:#B4B2A9;--text3:#888780;
-  --blue-light:#0c2a45;--amber-light:#2a1f05;--green-light:#04342c;--red-light:#2a1010;
-}}
+
 html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;touch-action:pan-y pinch-zoom;}
 body{display:flex;justify-content:center;}
 .app{width:100%;max-width:520px;min-height:100%;background:var(--bg);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px);}
@@ -79,7 +74,7 @@ body{display:flex;justify-content:center;}
 .serie-num.wu-num{color:#854F0B;}
 .serie-row input[type=number]{min-height:42px;text-align:center;border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:10px 4px;font-size:17px;font-weight:500;width:100%;background:var(--surface2);color:var(--text);font-family:'DM Mono',monospace;outline:none;-moz-appearance:textfield;}
 .serie-row.warmup-row input[type=number]{background:rgba(239,159,39,0.12);border-color:rgba(186,117,23,0.3);color:#633806;}
-@media(prefers-color-scheme:dark){.serie-row.warmup-row input[type=number]{color:#FAC775;}}
+
 .serie-row input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .serie-row input[type=number]:focus{border-color:var(--blue);background:var(--surface);}
 
@@ -99,14 +94,8 @@ body{display:flex;justify-content:center;}
 .reco-next{font-size:12px;color:var(--text3);}
 
 
-/* Autosave, shoulder tracking and training statistics */
-.shoulder-panel{margin:0 12px 12px;padding:12px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);}
-.shoulder-panel label{display:block;font-size:14px;font-weight:500;color:var(--text2);margin-bottom:8px;}
-.shoulder-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.shoulder-row input{flex:1;min-width:0;accent-color:var(--blue);min-height:28px;}
-.shoulder-row output{min-width:44px;text-align:right;font:500 16px 'DM Mono',monospace;color:var(--blue);}
-#shoulder-note{width:100%;min-height:42px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:10px 11px;font:14px 'DM Sans',sans-serif;background:var(--surface2);color:var(--text);}
-.autosave-status{font-size:11px;color:var(--text3);margin-top:7px;}
+/* Autosave status and training statistics */
+.autosave-status{font-size:12px;color:var(--text3);margin:0 16px 10px;}
 .stats-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;}
 .stats-tile{padding:12px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);min-width:0;}
 .stats-value{font:500 21px 'DM Mono',monospace;color:var(--blue);}
@@ -218,6 +207,72 @@ button,input,select{touch-action:manipulation;}
 .sheet-btn:hover{background:var(--blue-light);}
 .sheet-btn i{font-size:22px;color:var(--blue);flex-shrink:0;}
 .sheet-btn-sub{font-size:13px;color:var(--text3);font-weight:400;margin-top:2px;}
+
+/* Friendly daylight refresh */
+:root{
+  color-scheme:light;
+  --blue:#1769AA;--blue-dark:#104F86;--blue-light:#EAF4FF;
+  --amber:#E99A22;--amber-light:#FFF4DE;
+  --green:#168264;--green-light:#E5F7F0;
+  --red:#C34444;--red-light:#FFF0F0;
+  --bg:#F3F7FC;--surface:#FFFFFF;--surface2:#F5F8FC;
+  --border:#E2EAF3;--border2:#C8D6E5;
+  --text:#172B42;--text2:#53677D;--text3:#7F91A5;
+  --radius:16px;--radius-sm:11px;--pill:24px;
+}
+html,body{background:var(--bg);color:var(--text);}
+body{padding:0 0 12px;}
+.app{background:linear-gradient(180deg,#EAF4FF 0,#F3F7FC 210px);}
+.topbar{background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);padding:18px 18px 15px;box-shadow:0 3px 12px rgba(30,75,120,.04);}
+.logo{font-weight:700;letter-spacing:-.6px;}
+.logo span{color:var(--blue);}
+.icon-btn{border:1px solid var(--border2);background:#fff;border-radius:12px;box-shadow:0 2px 5px rgba(23,65,110,.04);}
+.tab-bar{background:#fff;border-bottom:1px solid var(--border);padding:0 8px;}
+.tab{padding:15px 0;font-weight:600;}
+.tab.active{color:var(--blue);border-bottom-width:3px;}
+.day-tabs{background:#fff;border-bottom:1px solid var(--border);gap:3px;padding:4px 6px 0;}
+.day-tab{border-radius:12px 12px 0 0;padding:12px 14px 10px;}
+.day-tab.active{background:var(--blue-light);border-bottom-color:var(--blue);}
+.day-tab .icon{font-size:21px;}
+.date-row{margin:12px 12px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(30,75,120,.035);}
+.date-row input[type=date],.serie-row input[type=number],#hf-day,#hf-ex{background:#F7FAFE;border:1px solid var(--border2);border-radius:10px;}
+.ex-card{border:1px solid var(--border);border-radius:17px;box-shadow:0 5px 18px rgba(32,72,112,.055);margin:0 12px 14px;background:#fff;}
+.ex-header{padding:16px 16px 11px;}
+.ex-name{font-size:17px;font-weight:700;letter-spacing:-.2px;color:#175F9C;}
+.ex-scheme{background:#EAF4FF;color:#255C8D;font-family:'DM Sans',sans-serif;font-weight:700;}
+.ex-rest{background:#F1F5FA;color:#5C7187;}
+.add-inline{box-shadow:0 3px 8px rgba(23,105,170,.13);transition:transform .15s,background .15s;}
+.add-inline:active{transform:scale(.94);}
+.serie-header{background:#F8FAFD;border-top:1px solid var(--border);}
+.serie-row{padding-top:7px;padding-bottom:7px;}
+.serie-row input[type=number]{background:#F7FAFE;border-color:#D7E2EE;}
+.serie-row input[type=number]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,105,170,.11);}
+.done-btn{border:1px solid #D4E0EB;background:#F2F6FA;border-radius:10px;font-weight:700;}
+.done-btn.is-done{background:#DDF7EC;border-color:#77C9AC;color:#117653;}
+.reco-block{border-radius:12px;padding:11px 13px;}
+.autosave-status{padding:2px 5px;color:#54718D;}
+.save-bar{background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -5px 20px rgba(32,72,112,.07);padding:12px;}
+.record-btn,.save-btn{border-radius:12px;font-weight:700;min-height:46px;}
+.record-btn{background:#EAF4FF;color:#175F9C;border:1px solid #C8DFF6;}
+.save-btn{box-shadow:0 4px 10px rgba(23,105,170,.15);}
+.hist-wrap,.journal-wrap{padding:14px 12px 22px;}
+.hist-filters select{background:#fff;border:1px solid var(--border2);border-radius:11px;padding:12px;}
+.hist-session,.session-card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 14px rgba(32,72,112,.045);overflow:hidden;}
+.hist-session-hd,.session-card-hd{background:#FBFDFF;}
+.stats-tile{background:#fff;border:1px solid var(--border);border-radius:15px;box-shadow:0 3px 12px rgba(32,72,112,.04);padding:15px;}
+.stats-value{color:#1769AA;font-size:23px;font-weight:700;}
+.stats-note{background:#EAF4FF;color:#42617F;border:1px solid #D5E7F8;border-radius:14px;}
+.cal-header{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;}
+.cal-nav{background:#F3F8FE;border:1px solid var(--border2);border-radius:10px;}
+.cal-cell{border-radius:11px;}
+.cal-cell.has-session{background:#1769AA;box-shadow:0 3px 8px rgba(23,105,170,.16);}
+.sheet,.chart-sheet{background:#fff;box-shadow:0 -8px 28px rgba(20,50,80,.14);}
+.sheet-btn{background:#F7FAFE;border:1px solid var(--border);border-radius:13px;}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;}
+button{transition:filter .15s,transform .12s;}
+button:active{filter:brightness(.97);}
+@media(max-width:360px){.ex-name{font-size:15px}.date-row{margin-left:8px;margin-right:8px}}
+
 </style>
 </head>
 <body>
@@ -241,13 +296,8 @@ button,input,select{touch-action:manipulation;}
     <label><i class="ti ti-calendar" style="font-size:16px"></i> Date</label>
     <input type="date" id="session-date">
   </div>
-  <div class="shoulder-panel">
-    <label for="shoulder-pain">Épaule — douleur (0 à 10)</label>
-    <div class="shoulder-row"><input type="range" id="shoulder-pain" min="0" max="10" step="1" value="0"><output id="shoulder-value">0/10</output></div>
-    <input type="text" id="shoulder-note" maxlength="240" placeholder="Épaule : mouvement déclencheur, claquement, évolution…">
-    <div class="autosave-status" id="autosave-status" role="status" aria-live="polite">Sauvegarde automatique activée</div>
-  </div>
-  <div id="exercises-list"></div>
+  <div class="autosave-status" id="autosave-status" role="status" aria-live="polite">Sauvegarde automatique activée</div>
+<div id="exercises-list"></div>
   <div class="toast" id="toast"></div>
   <div class="save-bar">
     <button class="record-btn" onclick="recordSession()"><i class="ti ti-bookmark" style="font-size:17px"></i>Enregistrer en cours</button>
@@ -371,21 +421,18 @@ let chartInstance=null;
 try{sessions=JSON.parse(localStorage.getItem('il_v2')||'[]');if(!Array.isArray(sessions))sessions=[]}catch{sessions=[]}
 let autoDrafts={};
 try{autoDrafts=JSON.parse(localStorage.getItem('il_autosave_v1')||'{}');if(!autoDrafts||typeof autoDrafts!=='object')autoDrafts={}}catch{autoDrafts={}}
-let shoulderPain=0, shoulderNote='';
 function save(){try{localStorage.setItem('il_v2',JSON.stringify(sessions));return true}catch(e){setAutosaveStatus('Stockage saturé — exporte une sauvegarde JSON.');return false}}
 function draftKey(day,date){return `${date||today()}_${day}`}
 function setAutosaveStatus(msg){const el=document.getElementById('autosave-status');if(el)el.textContent=msg}
 function persistDraft(){
   const date=document.getElementById('session-date')?.value||today();
-  autoDrafts[draftKey(curDay,date)]={day:curDay,date,state:JSON.parse(JSON.stringify(state)),shoulderPain:Number(shoulderPain)||0,shoulderNote:shoulderNote||'',updatedAt:Date.now()};
+  autoDrafts[draftKey(curDay,date)]={day:curDay,date,state:JSON.parse(JSON.stringify(state)),updatedAt:Date.now()};
   try{localStorage.setItem('il_autosave_v1',JSON.stringify(autoDrafts));setAutosaveStatus('Sauvegardé automatiquement à '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));return true}
   catch(e){setAutosaveStatus('Impossible de sauvegarder automatiquement — exporte une sauvegarde JSON.');return false}
 }
 function restoreDraft(day,date){
   const d=autoDrafts[draftKey(day,date)];if(!d||!d.state)return false;
-  state=d.state;shoulderPain=Number(d.shoulderPain)||0;shoulderNote=d.shoulderNote||'';
-  const pain=document.getElementById('shoulder-pain'),note=document.getElementById('shoulder-note'),out=document.getElementById('shoulder-value');
-  if(pain)pain.value=shoulderPain;if(note)note.value=shoulderNote;if(out)out.textContent=shoulderPain+'/10';return true;
+  state=d.state;return true;
 }
 function clearDraft(day,date){delete autoDrafts[draftKey(day,date)];try{localStorage.setItem('il_autosave_v1',JSON.stringify(autoDrafts))}catch{}}
 function today(){return new Date().toISOString().split('T')[0]}
@@ -421,10 +468,7 @@ const LEGACY_EXERCISE_NAMES={
 
 document.getElementById('session-date').value=today();
 buildState(0);restoreDraft(0,today());renderDayTabs();renderExercises();renderHistFilter();
-document.getElementById('session-date').addEventListener('change',()=>{const d=document.getElementById('session-date').value||today();buildState(curDay);if(!restoreDraft(curDay,d)){shoulderPain=0;shoulderNote='';syncShoulderUI();}renderExercises();persistDraft();});
-document.getElementById('shoulder-pain').addEventListener('input',e=>{shoulderPain=Number(e.target.value);document.getElementById('shoulder-value').textContent=shoulderPain+'/10';persistDraft();});
-document.getElementById('shoulder-note').addEventListener('input',e=>{shoulderNote=e.target.value;persistDraft();});
-function syncShoulderUI(){document.getElementById('shoulder-pain').value=shoulderPain;document.getElementById('shoulder-value').textContent=shoulderPain+'/10';document.getElementById('shoulder-note').value=shoulderNote;}
+document.getElementById('session-date').addEventListener('change',()=>{const d=document.getElementById('session-date').value||today();buildState(curDay);restoreDraft(curDay,d);renderExercises();persistDraft();});
 
 function getLastWorkSetsForDay(exName,day){
   const ordered=[...sessions].filter(s=>s.day===day&&!s.draft).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.ts||0)-(a.ts||0));
@@ -470,7 +514,7 @@ function renderDayTabs(){
     const div=document.createElement('div');
     div.className='day-tab'+(i===curDay?' active':'');
     div.innerHTML=`<span class="icon">${d.icon}</span><div class="dlabel">${d.label}</div><div class="dsub">${d.sub}</div>`;
-    div.onclick=()=>{persistDraft();curDay=i;const date=document.getElementById('session-date').value||today();buildState(i);if(!restoreDraft(i,date)){shoulderPain=0;shoulderNote='';syncShoulderUI();}renderDayTabs();renderExercises();persistDraft();};
+    div.onclick=()=>{persistDraft();curDay=i;const date=document.getElementById('session-date').value||today();buildState(i);restoreDraft(i,date);renderDayTabs();renderExercises();persistDraft();};
     wrap.appendChild(div);
   });
 }
@@ -607,12 +651,12 @@ function saveSession(){
   // Replace draft if exists for same day+date, otherwise push
   const draftIdx=sessions.findIndex(s=>s.date===date&&s.day===curDay&&s.draft);
   if(draftIdx>=0){
-    sessions[draftIdx]={date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises,shoulderPain:Number(shoulderPain)||0,shoulderNote:shoulderNote||''};
+    sessions[draftIdx]={date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises};
   } else {
-    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises,shoulderPain:Number(shoulderPain)||0,shoulderNote:shoulderNote||''});
+    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises});
   }
   save();clearDraft(curDay,date);showToast('Séance sauvegardée !');
-  buildState(curDay);shoulderPain=0;shoulderNote='';syncShoulderUI();renderExercises();renderHistFilter();persistDraft();renderJournal();
+  buildState(curDay);renderExercises();renderHistFilter();persistDraft();renderJournal();
 }
 // Enregistrer en cours — sauvegarde sans réinitialiser les champs
 function recordSession(){
@@ -627,9 +671,9 @@ function recordSession(){
   // Find existing draft for same day+date and update it, or create new
   const existing=sessions.findIndex(s=>s.date===date&&s.day===curDay&&s.draft);
   if(existing>=0){
-    sessions[existing]={...sessions[existing],exercises,ts:Date.now(),shoulderPain:Number(shoulderPain)||0,shoulderNote:shoulderNote||''};
+    sessions[existing]={...sessions[existing],exercises,ts:Date.now()};
   } else {
-    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises,draft:true,shoulderPain:Number(shoulderPain)||0,shoulderNote:shoulderNote||''});
+    sessions.push({date,day:curDay,dayLabel:DAYS[curDay].label+' – '+DAYS[curDay].sub,ts:Date.now(),exercises,draft:true});
   }
   save();persistDraft();showToast('Enregistré ✓ — continue ta séance !');
   renderHistFilter();
@@ -698,7 +742,6 @@ function renderHistory(){
         </div>
       </div>
       <div class="hist-summary"><span class="hist-stat"><strong>${totalSets}</strong> séries</span><span class="hist-stat"><strong>${exList.length}</strong> exercices</span></div>
-      ${sess.shoulderPain!==undefined?`<div class="hist-summary"><span class="hist-stat"><strong>Épaule ${sess.shoulderPain}/10</strong></span>${sess.shoulderNote?`<span class="hist-stat">${escapeHTML(sess.shoulderNote)}</span>`:''}</div>`:''}
       ${exHtml}
     </div>`;
   }).join('');
@@ -747,18 +790,16 @@ function closeChartOutside(e){if(e.target===document.getElementById('chart-overl
 // ─── JOURNAL ─────────────────────────────────────────────
 function renderStatsPanel(){
   const el=document.getElementById('stats-panel');if(!el)return;
-  const completed=sessions.filter(s=>!s.draft);const now=new Date();const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-6);
+  const completed=sessions.filter(s=>!s.draft);
+  const now=new Date();const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-6);
   const week=completed.filter(s=>{const d=new Date((s.date||'')+'T12:00:00');return !isNaN(d)&&d>=cutoff&&d<=new Date(now.getTime()+86400000)});
   const sets=completed.reduce((n,s)=>n+s.exercises.reduce((m,e)=>m+(e.sets||[]).length,0),0);
   const volume=completed.reduce((n,s)=>n+s.exercises.reduce((m,e)=>m+(e.sets||[]).reduce((k,x)=>k+(Number(x.lb)||0)*(Number(x.reps)||0),0),0),0);
-  const shoulder=completed.filter(s=>s.shoulderPain!==undefined).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.ts||0)-(a.ts||0)).slice(0,10);
-  const avg=shoulder.length?shoulder.reduce((n,s)=>n+Number(s.shoulderPain||0),0)/shoulder.length:null;
-  const latest=shoulder[0];
   el.innerHTML=`<div class="stats-tile"><div class="stats-value">${completed.length}</div><div class="stats-label">Séances enregistrées</div></div>
     <div class="stats-tile"><div class="stats-value">${week.length}</div><div class="stats-label">Séances sur 7 jours</div></div>
     <div class="stats-tile"><div class="stats-value">${sets}</div><div class="stats-label">Séries consignées</div></div>
     <div class="stats-tile"><div class="stats-value">${Math.round(volume).toLocaleString('fr-CA')} <small>lb·reps</small></div><div class="stats-label">Volume cumulé indicatif</div></div>
-    <div class="stats-note"><strong>Suivi de l’épaule :</strong> ${latest?`dernière mesure ${latest.shoulderPain}/10 (${fmtDate(latest.date)}); moyenne des ${shoulder.length} dernières séances avec mesure : ${avg.toFixed(1)}/10.`:'aucune mesure enregistrée pour le moment.'} ${latest?.shoulderNote?`Dernière note : « ${escapeHTML(latest.shoulderNote)} »`:''} Le volume utilise les charges saisies en lb × répétitions; il sert à comparer tes séances, pas à mesurer un travail mécanique exact.</div>`;
+    <div class="stats-note"><strong>Ton activité :</strong> retrouve tes séances dans l’historique et ouvre « Progression » sur un exercice pour suivre l’évolution des charges. Le volume est calculé à partir des charges saisies en lb × répétitions; il sert à comparer les séances.</div>`;
 }
 
 function renderJournal(){
@@ -846,10 +887,10 @@ function importJSON(e){
 }
 function exportCSV(){
   if(!sessions.length){showToast('Aucune donnée','warn');return;}
-  let csv='Date,Day,Exercise,Type,Set,LB,Reps,Done,Comment,ShoulderPain,ShoulderNote\n';
+  let csv='Date,Day,Exercise,Type,Set,LB,Reps,Done,Comment\n';
   sessions.forEach(s=>s.exercises.forEach(ex=>{
     (ex.warmupSets||[]).forEach((set,i)=>csv+=`${s.date},"${s.dayLabel||''}","${ex.name}",Échauffement,W${i+1},${set.lb},${set.reps},,\n`);
-    (ex.sets||[]).forEach((set,i)=>csv+=`${s.date},"${s.dayLabel||''}","${ex.name}",Work,${i+1},${set.lb},${set.reps},${set.done?'Yes':'No'},"${ex.comment||''}",${s.shoulderPain??''},"${(s.shoulderNote||'').replaceAll('\"','\"\"')}"\n`);
+    (ex.sets||[]).forEach((set,i)=>csv+=`${s.date},"${s.dayLabel||''}","${ex.name}",Work,${i+1},${set.lb},${set.reps},${set.done?'Yes':'No'},"${ex.comment||''}"\n`);
   }));
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ironlog.csv';a.click();URL.revokeObjectURL(url);closeSheet();
