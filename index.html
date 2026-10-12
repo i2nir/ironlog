@@ -465,6 +465,29 @@ const LEGACY_EXERCISE_NAMES={
   'Standing Calf Raise':'Mollets debout',
   'Swiss Ball Crunch':'Abdos swiss ball'
 };
+// Un nom canonique par exercice : reconnaît les noms anglais et français déjà présents dans les sauvegardes.
+const EXERCISE_ALIASES={};
+DAYS.forEach(day=>day.exercises.forEach(ex=>{
+  EXERCISE_ALIASES[ex.n.trim().toLowerCase()]=ex.n;
+}));
+Object.entries(LEGACY_EXERCISE_NAMES).forEach(([english,french])=>{
+  const canonical=DAYS.flatMap(d=>d.exercises).find(ex=>ex.n.toLowerCase()===english.toLowerCase())?.n || english;
+  EXERCISE_ALIASES[english.trim().toLowerCase()]=canonical;
+  EXERCISE_ALIASES[french.trim().toLowerCase()]=canonical;
+});
+EXERCISE_ALIASES['back squat']='Back Squat';
+EXERCISE_ALIASES['t-bar row']='T-Bar Row';
+function canonicalExerciseName(name){
+  const raw=String(name||'').trim();
+  return EXERCISE_ALIASES[raw.toLowerCase()] || raw;
+}
+// Normalise les noms en mémoire sans supprimer ni modifier les séances, séries ou charges.
+let exerciseNamesNormalized=false;
+sessions.forEach(session=>(session.exercises||[]).forEach(ex=>{
+  const canonical=canonicalExerciseName(ex.name);
+  if(canonical!==ex.name){ex.name=canonical;exerciseNamesNormalized=true;}
+}));
+if(exerciseNamesNormalized)save();
 
 document.getElementById('session-date').value=today();
 buildState(0);restoreDraft(0,today());renderDayTabs();renderExercises();renderHistFilter();
@@ -702,8 +725,10 @@ function escapeHTML(value){return String(value??'').replace(/[&<>\"']/g,c=>({'&'
 function renderHistFilter(){
   const sel=document.getElementById('hf-ex');const prev=sel.value;
   sel.innerHTML='<option value="">Tous les exercices</option>';
-  [...new Set(sessions.flatMap(s=>s.exercises.map(e=>e.name)))].forEach(n=>{
-    const o=document.createElement('option');o.value=n;o.textContent=n;if(n===prev)o.selected=true;sel.appendChild(o);
+  const uniqueNames=[...new Set(sessions.flatMap(s=>(s.exercises||[]).map(e=>canonicalExerciseName(e.name))))]
+    .sort((a,b)=>a.localeCompare(b));
+  uniqueNames.forEach(n=>{
+    const o=document.createElement('option');o.value=n;o.textContent=n;if(n===canonicalExerciseName(prev))o.selected=true;sel.appendChild(o);
   });
 }
 function renderHistory(){
@@ -711,12 +736,12 @@ function renderHistory(){
   const exF=document.getElementById('hf-ex').value;
   let rows=[...sessions].sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts);
   if(dayF!=='')rows=rows.filter(r=>r.day==dayF);
-  if(exF!=='')rows=rows.filter(r=>r.exercises.some(e=>e.name===exF));
+  if(exF!=='')rows=rows.filter(r=>(r.exercises||[]).some(e=>canonicalExerciseName(e.name)===exF));
   const wrap=document.getElementById('hist-content');
   if(!rows.length){wrap.innerHTML='<div class="empty"><i class="ti ti-clipboard-list"></i>Aucune séance enregistrée</div>';return;}
   wrap.innerHTML=rows.map(sess=>{
     const oi=sessions.indexOf(sess);
-    const exList=exF?sess.exercises.filter(e=>e.name===exF):sess.exercises;
+    const exList=exF?sess.exercises.filter(e=>canonicalExerciseName(e.name)===exF):sess.exercises;
     const totalSets=exList.reduce((a,e)=>a+(e.sets||[]).length,0);
     const exHtml=exList.map(ex=>{
       const wuLines=(ex.warmupSets||[]).map((s,i)=>`<div class="hist-set-line">
@@ -876,6 +901,7 @@ function importJSON(e){
   reader.onload=ev=>{
     try{
       const imported=JSON.parse(ev.target.result);if(!Array.isArray(imported))throw new Error();
+      imported.forEach(session=>(session.exercises||[]).forEach(ex=>ex.name=canonicalExerciseName(ex.name)));
       if(!confirm(`Importer ${imported.length} séance(s) ?`))return;
       const existing=new Set(sessions.map(s=>s.ts));
       const newOnes=imported.filter(s=>!existing.has(s.ts));
