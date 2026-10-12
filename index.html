@@ -479,7 +479,12 @@ EXERCISE_ALIASES['back squat']='Back Squat';
 EXERCISE_ALIASES['t-bar row']='T-Bar Row';
 function canonicalExerciseName(name){
   const raw=String(name||'').trim();
-  return EXERCISE_ALIASES[raw.toLowerCase()] || raw;
+  if(!raw)return raw;
+  const key=raw.toLocaleLowerCase();
+  if(EXERCISE_ALIASES[key])return EXERCISE_ALIASES[key];
+  // Fallback: match the canonical exercise catalogue without case sensitivity.
+  const match=DAYS.flatMap(day=>day.exercises).find(ex=>String(ex.n).trim().toLocaleLowerCase()===key);
+  return match ? match.n : raw;
 }
 // Normalise les noms en mémoire sans supprimer ni modifier les séances, séries ou charges.
 let exerciseNamesNormalized=false;
@@ -751,8 +756,8 @@ function renderHistory(){
         <span class="hist-set-num">${i+1}</span><span class="hist-lb">${s.lb} lb</span><span>× ${s.reps} reps</span>
         ${s.done?'<span class="hist-wu-tag">Fait</span>':'<span class="hist-wu-tag">Non</span>'}</div>`).join('');
       return `<div class="hist-ex">
-        <div class="hist-ex-name">${ex.name}
-          <button class="hist-ex-chart-btn" onclick="openChart('${encodeURIComponent(ex.name)}')"><i class="ti ti-chart-line" style="font-size:13px"></i> Progression</button>
+        <div class="hist-ex-name">${escapeHTML(canonicalExerciseName(ex.name))}
+          <button class="hist-ex-chart-btn" onclick="openChart('${encodeURIComponent(canonicalExerciseName(ex.name))}')"><i class="ti ti-chart-line" style="font-size:13px"></i> Progression</button>
         </div>
         ${wuLines}${workLines}
         ${ex.comment?`<div class="hist-comment">"${ex.comment}"</div>`:''}
