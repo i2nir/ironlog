@@ -835,7 +835,7 @@ function renderStatsPanel(){
 function renderJournal(){
   const MONTH_FR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   renderStatsPanel();
-  const DAY_FR=['Lu','Ma','Me','Je','Ve','Sa','Di'];
+  const DAY_FR=['Di','Lu','Ma','Me','Je','Ve','Sa'];
   document.getElementById('cal-month-label').textContent=MONTH_FR[calMonth]+' '+calYear;
 
   // Build session date map
@@ -845,7 +845,7 @@ function renderJournal(){
   // Calendar grid
   const firstDay=new Date(calYear,calMonth,1);
   const lastDay=new Date(calYear,calMonth+1,0);
-  let startDow=firstDay.getDay();startDow=(startDow+6)%7; // Mon=0
+  let startDow=firstDay.getDay(); // Dimanche=0
   const todayStr=today();
   let grid=`${DAY_FR.map(d=>`<div class="cal-day-name">${d}</div>`).join('')}`;
   // Empty cells before
