@@ -657,12 +657,29 @@ function calcReco(ex,workSets){
   const [rMin,rMax]=parseRange(ex.s);
   const valid=lastSets.filter(s=>Number(s.reps)>0&&Number(s.lb)>=0);if(!valid.length)return null;
   const variant=lastSets.variant||state[ex.n]?.variant;const inc=progressionIncrement(ex.n,variant);
-  const allAtTop=valid.length===lastSets.length&&valid.every(s=>Number(s.reps)>=rMax);
-  const lowCount=valid.filter(s=>Number(s.reps)<rMin).length;
   const current=Number(valid[0].lb)||0;
-  if(allAtTop){const next=current+inc;return{type:'up',label:`🟢 Tous les sets à ${rMax}+ : essayer +${inc} lb`,next};}
-  if(lowCount>=Math.ceil(valid.length/2)){const next=Math.max(0,current-inc);return{type:'down',label:`🔴 Plusieurs sets sous ${rMin} reps : réduire de ${inc} lb`,next};}
-  return{type:'hold',label:`⚪ Maintenir la charge — viser ${rMax} reps`,next:current};
+  // Augmenter seulement après 3 séances consécutives comparables réussies
+  // (même exercice/jour, même charge, même nombre de séries, toutes à rMax+).
+  const ordered=[...sessions].filter(ss=>ss.day===curDay&&!ss.draft)
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.ts||0)-(a.ts||0));
+  const recent=[];
+  for(const ss of ordered){
+    const savedEx=(ss.exercises||[]).find(e=>canonicalExerciseName(e.name)===canonicalExerciseName(ex.n));
+    if(!savedEx||!Array.isArray(savedEx.sets)||!savedEx.sets.length)continue;
+    if(ex.dropdown && (savedEx.variant||'DB')!==(variant||'DB'))continue;
+    const sets=savedEx.sets;
+    const usable=sets.every(s=>Number(s.reps)>0&&Number(s.lb)>=0);
+    if(!usable)break;
+    const sameLoad=sets.every(s=>Number(s.lb)===current);
+    if(!sameLoad||sets.length!==lastSets.length)break;
+    recent.push(sets);
+    if(recent.length===3)break;
+  }
+  const threeSuccessful=recent.length===3&&recent.every(sets=>sets.every(s=>Number(s.reps)>=rMax));
+  const lowCount=valid.filter(s=>Number(s.reps)<rMin).length;
+  if(threeSuccessful){const next=current+inc;return{type:'up',label:`🟢 ${rMax}+ reps sur 3 séances consécutives : augmenter de ${inc} lb`,next};}
+  if(lowCount>=Math.ceil(valid.length/2)){const next=Math.max(0,current-inc);return{type:'down',label:`🔴 Plusieurs séries sous ${rMin} reps : réduire de ${inc} lb`,next};}
+  return{type:'hold',label:`⚪ Maintenir la charge — viser ${rMax} reps (3 séances réussies avant d’augmenter)`,next:current};
 }
 function toggleSetDone(enc,si){
   const n=decodeURIComponent(enc);if(!state[n]||!state[n].work[si])return;
