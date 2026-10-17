@@ -509,8 +509,31 @@ function persistDraft(){
   catch(e){setAutosaveStatus('Impossible de sauvegarder automatiquement — exporte une sauvegarde JSON.');return false}
 }
 function restoreDraft(day,date){
-  const d=autoDrafts[draftKey(day,date)];if(!d||!d.state)return false;
-  state=d.state;return true;
+  const d=autoDrafts[draftKey(day,date)];
+  if(!d||!d.state||typeof d.state!=='object')return false;
+  // Toujours partir d'un état complet correspondant au catalogue actuel.
+  // Les anciennes sauvegardes automatiques peuvent contenir des noms/structures
+  // d'exercices précédents; les appliquer telles quelles empêchait le rendu.
+  const saved=d.state;
+  buildState(day);
+  DAYS[day].exercises.forEach(ex=>{
+    let prior=saved[ex.n];
+    if(!prior){
+      const oldKey=Object.keys(saved).find(k=>canonicalExerciseName(k).toLocaleLowerCase()===ex.n.toLocaleLowerCase());
+      if(oldKey)prior=saved[oldKey];
+    }
+    if(!prior||typeof prior!=='object')return;
+    const current=state[ex.n];
+    if(Array.isArray(prior.warmup)){
+      current.warmup=prior.warmup.filter(x=>x&&typeof x==='object').map(x=>({lb:String(x.lb??''),reps:String(x.reps??'')}));
+    }
+    if(Array.isArray(prior.work)){
+      current.work=prior.work.filter(x=>x&&typeof x==='object').map(x=>({lb:String(x.lb??''),reps:String(x.reps??''),done:!!x.done}));
+    }
+    if(typeof prior.comment==='string')current.comment=prior.comment;
+    if(ex.dropdown)current.variant=prior.variant==='Poulie'?'Poulie':'DB';
+  });
+  return true;
 }
 function clearDraft(day,date){delete autoDrafts[draftKey(day,date)];try{localStorage.setItem('il_autosave_v1',JSON.stringify(autoDrafts))}catch{}}
 function today(){return new Date().toISOString().split('T')[0]}
@@ -669,6 +692,9 @@ function renderExercises(){
   const wrap=document.getElementById('exercises-list');wrap.innerHTML='';
 
   DAYS[curDay].exercises.forEach(ex=>{
+    if(!state[ex.n]){
+      state[ex.n]={warmup:(ex.warmupSets||[]).map(w=>({lb:String(w.lb??''),reps:String(w.reps??'')})),work:Array.from({length:ex.workCount||parseInt(ex.s.split('×')[0])||3},()=>({lb:ex.defaultLb==null?'':String(ex.defaultLb),reps:'',done:false})),comment:'',variant:ex.dropdown?'DB':null};
+    }
     const st=state[ex.n];
     const card=document.createElement('div');card.className='ex-card';
     const enc=encodeURIComponent(ex.n);
