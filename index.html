@@ -164,6 +164,24 @@ button,input,select{touch-action:manipulation;}
 .empty i{font-size:36px;display:block;margin-bottom:10px;}
 
 /* Journal */
+.muscle-volume-card{margin:18px 0 14px;padding:15px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.muscle-volume-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.muscle-volume-heading .stats-section-title{font-size:16px;margin:0 0 4px}
+.muscle-volume-subtitle{font-size:12px;color:var(--text3)}
+.muscle-volume-goal{font-size:11px;white-space:nowrap;padding:5px 8px;border-radius:20px;background:var(--surface2);color:var(--text2)}
+.muscle-volume-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.muscle-volume-item{min-width:0;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+.muscle-volume-item-top,.muscle-volume-item-bottom{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.muscle-volume-name{font-size:12px;font-weight:600}
+.muscle-volume-item-top strong{font-size:13px;white-space:nowrap}
+.muscle-volume-item-top strong small{font-size:10px;color:var(--text3);font-weight:400}
+.muscle-volume-track{height:7px;background:var(--border);border-radius:99px;overflow:hidden;margin:9px 0 7px}
+.muscle-volume-fill{height:100%;border-radius:99px;background:var(--blue);transition:width .2s}
+.muscle-volume-fill.in-range{background:var(--green)}
+.muscle-volume-item-bottom{font-size:10px;color:var(--text3);align-items:flex-start}
+.muscle-volume-item-bottom span:last-child{text-align:right}
+@media(max-width:420px){.muscle-volume-grid{grid-template-columns:1fr}.muscle-volume-heading{flex-direction:column}.muscle-volume-goal{align-self:flex-start}}
+
 .muscle-volume-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:10px 0 12px}.muscle-volume-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;font-size:13px}.muscle-volume-row strong{white-space:nowrap}.muscle-volume-status{font-size:11px;white-space:nowrap}.muscle-volume-status.ok{color:var(--green)}.muscle-volume-status.low{color:var(--text3)}.stats-section-title{font-weight:700;font-size:15px;margin:4px 0 8px}.stats-section-title small{font-weight:400;color:var(--text3);margin-left:6px;font-size:11px}
 .journal-wrap{padding:12px;}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -404,14 +422,13 @@ input,select,textarea{accent-color:var(--blue);}
 <!-- JOURNAL -->
 <div id="view-journal" style="display:none">
   <div class="journal-wrap">
-    <div id="stats-panel" class="stats-panel"></div>
-    <div id="muscle-volume-panel" class="stats-panel"></div>
     <div class="cal-header">
       <button class="cal-nav" onclick="calPrev()"><i class="ti ti-chevron-left"></i></button>
       <span class="cal-month" id="cal-month-label"></span>
       <button class="cal-nav" onclick="calNext()"><i class="ti ti-chevron-right"></i></button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
+    <div id="muscle-volume-panel" class="stats-panel"></div>
     <div id="journal-sessions"></div>
   </div>
 </div>
@@ -451,8 +468,8 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.1';
-const LNRLOG_MODIFIED_AT = '2026-10-26 19:00 (heure du Québec)';
+const LNRLOG_VERSION = '1.2';
+const LNRLOG_MODIFIED_AT = '2026-10-26 19:30 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDernière modification du fichier HTML : '+LNRLOG_MODIFIED_AT);
 }
@@ -1007,12 +1024,11 @@ function renderMuscleVolume(){
     const n=(ex.sets||[]).filter(st=>!st.warmup && !st.isWarmup).length;
     Object.entries(groups).forEach(([g,names])=>{if(names.some(x=>canonicalExerciseName(x)===name))counts[g]+=n;});
   }));
-  el.innerHTML=`<div class="stats-section-title">Séries par groupe musculaire <small>7 derniers jours</small></div><div class="muscle-volume-grid">${Object.entries(counts).map(([g,n])=>`<div class="muscle-volume-row"><span>${g}</span><strong>${n} séries</strong><span class="muscle-volume-status ${n>=10?'ok':'low'}">${n>=10?'Objectif atteint':'À compléter'}</span></div>`).join('')}</div><div class="stats-note">Repère indicatif : environ 10 à 20 séries de travail par groupe musculaire par semaine pour l’hypertrophie. Le calcul compte les séries directes identifiées dans les exercices enregistrés; les contributions indirectes ne sont pas incluses. Les séries d’échauffement sont exclues.</div>`;
+  el.innerHTML=`<section class="muscle-volume-card"><div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">Tes séries de travail des 7 derniers jours</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div><div class="muscle-volume-grid">${Object.entries(counts).map(([g,n])=>{const pct=Math.min(100,Math.round(n/20*100));const status=n>=10?'Dans la cible':n>0?'À développer':'Pas encore travaillé';return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> / 20 séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=10?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${n<10?`${10-n} pour atteindre 10`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible'}</span></div></div>`}).join('')}</div><div class="stats-note">Repère indicatif pour l’hypertrophie : 10 à 20 séries par semaine. Comptage des séries directes reconnues; contributions indirectes et échauffements exclus.</div></section>`;
 }
 
 function renderJournal(){
   const MONTH_FR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  renderStatsPanel();
   renderMuscleVolume();
   const DAY_FR=['Di','Lu','Ma','Me','Je','Ve','Sa'];
   document.getElementById('cal-month-label').textContent=MONTH_FR[calMonth]+' '+calYear;
