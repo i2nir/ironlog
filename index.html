@@ -190,7 +190,6 @@ button,input,select{touch-action:manipulation;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
 .cal-day-name{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;text-transform:uppercase;}
 .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:500;cursor:default;position:relative;}
-.cal-cell.selected-date{outline:2px solid var(--accent);outline-offset:1px;font-weight:800;}
 .cal-cell.has-session{background:var(--blue);color:#fff;cursor:pointer;}
 .cal-cell.has-session:hover{background:var(--blue-dark);}
 .cal-cell.today{box-shadow:0 0 0 2px var(--blue);}
@@ -370,6 +369,42 @@ input,select,textarea{accent-color:var(--blue);}
 .ex-add{align-self:center;width:36px;height:36px;font-size:22px;}
 @media(max-width:380px){.exercise-thumb{width:76px;height:70px;flex-basis:76px}.ex-header{gap:9px;padding:11px}.ex-name{font-size:15px}.tab{gap:5px;font-size:13px}}
 
+
+/* Prototype intégré : bilan musculaire interactif du journal */
+.cal-cell{border:0;background:transparent;font-family:inherit;width:100%;}
+.cal-cell.selected-day{outline:2px solid #FFAD33;outline-offset:1px;background:#152D40;color:#fff;}
+.cal-cell.has-session.selected-day{background:#1685FF;color:#fff;}
+.muscle-volume-card{box-sizing:border-box;width:100%;max-width:100%;margin:14px 0 16px;padding:15px;background:linear-gradient(160deg,#111C24,#0D1419);border:1px solid #263744;border-radius:17px;box-shadow:0 8px 22px rgba(0,0,0,.12);}
+.muscle-volume-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;}
+.muscle-volume-heading .stats-section-title{font-size:17px;margin:0 0 4px;color:#F3F7FA;}
+.muscle-volume-subtitle{font-size:12px;color:#91A5B5;}
+.muscle-volume-goal{font-size:11px;white-space:nowrap;padding:6px 8px;border-radius:20px;background:#122A3B;color:#72B9FF;border:1px solid #214563;}
+.muscle-volume-summary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+.muscle-volume-summary>div{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid #263744;background:#101A21;border-radius:12px;}
+.muscle-volume-summary-label{font-size:11px;color:#91A5B5;}
+.muscle-volume-summary strong{font:700 24px 'DM Mono',monospace;color:#49A8FF;}
+.muscle-volume-controls{display:grid;grid-template-columns:1.3fr 1fr;gap:9px;margin:12px 0;}
+.muscle-volume-controls label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:#A5B4C1;}
+.muscle-volume-controls select{min-width:0;width:100%;padding:10px 9px;border-radius:10px;border:1px solid #2D3B45;background:#151F26;color:#F3F7FA;font-size:12px;}
+.muscle-volume-filters{display:flex;gap:7px;margin:12px 0;flex-wrap:wrap;}
+.muscle-volume-filters button{border:1px solid #2D3B45;background:#151F26;color:#A5B4C1;border-radius:999px;padding:8px 12px;font-size:12px;cursor:pointer;}
+.muscle-volume-filters button.active{background:#12385D;border-color:#1685FF;color:#75BEFF;}
+.muscle-volume-grid{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 12px;}
+.muscle-volume-item{min-width:0;padding:11px 12px;border:1px solid #263744;border-radius:12px;background:#101A21;}
+.muscle-volume-item-top,.muscle-volume-item-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.muscle-volume-name{font-size:13px;font-weight:600;color:#EAF1F6;}
+.muscle-volume-item-top strong{font:700 14px 'DM Mono',monospace;color:#EAF1F6;white-space:nowrap;}
+.muscle-volume-item-top strong small{font:400 10px 'DM Sans',sans-serif;color:#91A5B5;}
+.muscle-volume-track{height:7px;background:#26343E;border-radius:99px;overflow:hidden;margin:10px 0 8px;}
+.muscle-volume-fill{height:100%;border-radius:99px;background:#D99A36;transition:width .2s;}
+.muscle-volume-fill.in-range{background:#28C795;}
+.muscle-volume-item-bottom{font-size:10px;color:#91A5B5;align-items:flex-start;}
+.muscle-volume-item-bottom span:last-child{text-align:right;}
+.muscle-volume-note{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:11px;background:#12202A;border:1px solid #243A49;border-radius:11px;color:#9EB3C2;font-size:11px;line-height:1.5;}
+.muscle-volume-note i{font-size:16px;color:#49A8FF;flex-shrink:0;}
+.muscle-volume-empty{padding:15px;text-align:center;color:#91A5B5;font-size:13px;}
+@media(max-width:380px){.muscle-volume-heading{flex-direction:column}.muscle-volume-goal{align-self:flex-start}.muscle-volume-controls{grid-template-columns:1fr 1fr}.muscle-volume-controls select{font-size:11px}}
+
 </style>
 </head>
 <body>
@@ -429,7 +464,7 @@ input,select,textarea{accent-color:var(--blue);}
       <button class="cal-nav" onclick="calNext()"><i class="ti ti-chevron-right"></i></button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
-    <div id="muscle-volume-panel" class="stats-panel"></div>
+    <div id="muscle-volume-panel" aria-live="polite"></div>
     <div id="journal-sessions"></div>
   </div>
 </div>
@@ -469,8 +504,8 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.2';
-const LNRLOG_MODIFIED_AT = '2026-10-26 19:30 (heure du Québec)';
+const LNRLOG_VERSION = '1.3';
+const LNRLOG_MODIFIED_AT = '2026-10-27 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDernière modification du fichier HTML : '+LNRLOG_MODIFIED_AT);
 }
@@ -546,6 +581,7 @@ const DAYS=[
 let curDay=0, state={}, sessions=[];
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let journalSelectedDate=today();
+let musclePeriod='7', muscleGoal=10, muscleFilter='all';
 let chartInstance=null;
 
 try{sessions=JSON.parse(localStorage.getItem('il_v2')||'[]');if(!Array.isArray(sessions))sessions=[]}catch{sessions=[]}
@@ -1005,13 +1041,6 @@ function renderStatsPanel(){
 
 function renderMuscleVolume(){
   const el=document.getElementById('muscle-volume-panel');if(!el)return;
-  const completed=sessions.filter(s=>!s.draft);
-  const selected=new Date((journalSelectedDate||today())+'T12:00:00');
-  const weekStart=new Date(selected);weekStart.setDate(selected.getDate()-selected.getDay());weekStart.setHours(0,0,0,0);
-  const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);weekEnd.setHours(23,59,59,999);
-  const recent=completed.filter(s=>{const d=new Date((s.date||'')+'T12:00:00');return !isNaN(d)&&d>=weekStart&&d<=weekEnd;});
-  const dateLabel=d=>d.toLocaleDateString('fr-CA',{day:'numeric',month:'short'});
-  const rangeLabel=`${dateLabel(weekStart)} – ${dateLabel(weekEnd)}`;
   const groups={
     'Pectoraux':['dumbbell bench press','incline dumbbell press','chest press','machine fly'],
     'Dos':['neutral-grip seated cable row','neutral-grip lat pulldown','t-bar row'],
@@ -1024,18 +1053,60 @@ function renderMuscleVolume(){
     'Mollets':['machine calf raise','standing calf raise'],
     'Abdominaux':['abs','swiss ball crunch']
   };
+  const selected=new Date((journalSelectedDate||today())+'T12:00:00');
+  let startDate,endDate;
+  if(musclePeriod==='7'){
+    startDate=new Date(selected);startDate.setDate(selected.getDate()-selected.getDay()); // dimanche
+    endDate=new Date(startDate);endDate.setDate(startDate.getDate()+6); // samedi
+  }else{
+    endDate=new Date(selected);
+    startDate=new Date(selected);
+    startDate.setDate(selected.getDate()-(Number(musclePeriod)-1));
+  }
+  startDate.setHours(0,0,0,0);endDate.setHours(23,59,59,999);
   const counts={};Object.keys(groups).forEach(g=>counts[g]=0);
-  recent.forEach(sess=>(sess.exercises||[]).forEach(ex=>{
+  const completed=sessions.filter(sess=>!sess.draft);
+  completed.filter(sess=>{
+    const d=new Date((sess.date||'')+'T12:00:00');
+    return !isNaN(d)&&d>=startDate&&d<=endDate;
+  }).forEach(sess=>(sess.exercises||[]).forEach(ex=>{
     const name=canonicalExerciseName(ex.name||'');
-    const n=(ex.sets||[]).filter(st=>!st.warmup && !st.isWarmup).length;
+    const n=(ex.sets||[]).filter(st=>!st.warmup&&!st.isWarmup).length;
     Object.entries(groups).forEach(([g,names])=>{if(names.some(x=>canonicalExerciseName(x)===name))counts[g]+=n;});
   }));
-  el.innerHTML=`<section class="muscle-volume-card"><div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">Semaine du ${rangeLabel} · ${recent.length} séance(s) terminée(s)</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div><div class="muscle-volume-grid">${Object.entries(counts).map(([g,n])=>{const pct=Math.min(100,Math.round(n/20*100));const status=n>=10?'Dans la cible':n>0?'À développer':'Pas encore travaillé';return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> / 20 séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=10?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${n<10?`${10-n} pour atteindre 10`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible'}</span></div></div>`}).join('')}</div><div class="stats-note">Repère indicatif pour l’hypertrophie : 10 à 20 séries par semaine. Comptage des séries directes reconnues; contributions indirectes et échauffements exclus.</div></section>`;
+  const total=Object.values(counts).reduce((a,n)=>a+n,0);
+  const fmt=d=>d.toLocaleDateString('fr-CA',{day:'numeric',month:'short'});
+  const periodLabel=musclePeriod==='7'?'Semaine du '+fmt(startDate)+' au '+fmt(endDate):'Du '+fmt(startDate)+' au '+fmt(endDate);
+  const visible=Object.entries(counts).filter(([g,n])=>muscleFilter==='all'||(muscleFilter==='low'?n<muscleGoal:n>=muscleGoal));
+  const rows=visible.map(([g,n])=>{
+    const pct=Math.min(100,Math.round(n/muscleGoal*100));
+    const status=n>=muscleGoal?'Objectif atteint':n>0?'À renforcer':'Pas encore travaillé';
+    const remaining=n<muscleGoal?`${muscleGoal-n} série(s) pour atteindre ${muscleGoal}`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible';
+    return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=muscleGoal?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${remaining}</span></div></div>`;
+  }).join('');
+  el.innerHTML=`<section class="muscle-volume-card">
+    <div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">${periodLabel} · séances terminées</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div>
+    <div class="muscle-volume-summary"><div><span class="muscle-volume-summary-label">Séries comptées</span><strong>${total}</strong></div><div><span class="muscle-volume-summary-label">Groupe(s) suivi(s)</span><strong>${Object.keys(groups).length}</strong></div></div>
+    <div class="muscle-volume-controls">
+      <label>Période<select aria-label="Période des statistiques" onchange="setMusclePeriod(this.value)"><option value="7" ${musclePeriod==='7'?'selected':''}>Semaine sélectionnée</option><option value="14" ${musclePeriod==='14'?'selected':''}>14 jours jusqu’à la date</option><option value="30" ${musclePeriod==='30'?'selected':''}>30 jours jusqu’à la date</option></select></label>
+      <label>Objectif min.<select aria-label="Objectif minimal de séries" onchange="setMuscleGoal(this.value)"><option value="6" ${muscleGoal===6?'selected':''}>6 séries</option><option value="10" ${muscleGoal===10?'selected':''}>10 séries</option><option value="12" ${muscleGoal===12?'selected':''}>12 séries</option></select></label>
+    </div>
+    <div class="muscle-volume-filters"><button class="${muscleFilter==='all'?'active':''}" onclick="setMuscleFilter('all')">Tous</button><button class="${muscleFilter==='low'?'active':''}" onclick="setMuscleFilter('low')">À renforcer</button><button class="${muscleFilter==='ok'?'active':''}" onclick="setMuscleFilter('ok')">Objectif atteint</button></div>
+    <div class="muscle-volume-grid">${rows||'<div class="muscle-volume-empty">Aucun groupe dans cette catégorie pour la période choisie.</div>'}</div>
+    <div class="muscle-volume-note"><i class="ti ti-info-circle"></i><span>Les échauffements et les séances en cours sont exclus. Le repère de 10 à 20 séries par semaine est indicatif. Seuls les exercices reconnus et leurs séries de travail directes sont comptés.</span></div>
+  </section>`;
 }
-
+function setMusclePeriod(value){musclePeriod=value;renderMuscleVolume();}
+function setMuscleGoal(value){muscleGoal=Number(value);renderMuscleVolume();}
+function setMuscleFilter(value){muscleFilter=value;renderMuscleVolume();}
+function selectJournalDate(dateStr){
+  journalSelectedDate=dateStr;
+  const d=new Date(dateStr+'T12:00:00');
+  calYear=d.getFullYear();calMonth=d.getMonth();
+  renderJournal();
+}
 function renderJournal(){
   const MONTH_FR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  renderMuscleVolume();
   const DAY_FR=['Di','Lu','Ma','Me','Je','Ve','Sa'];
   document.getElementById('cal-month-label').textContent=MONTH_FR[calMonth]+' '+calYear;
 
@@ -1058,9 +1129,10 @@ function renderJournal(){
     const hasSess=!!dateMap[dateStr];
     const isToday=dateStr===todayStr;
     const isSelected=dateStr===journalSelectedDate;
-    grid+=`<div class="cal-cell${hasSess?' has-session':''}${isToday?' today':''}${isSelected?' selected-date':''}" role="button" tabindex="0" aria-label="Sélectionner le ${d}" onclick="selectJournalDate('${dateStr}')">${d}</div>`;
+    grid+=`<button type="button" class="cal-cell${hasSess?' has-session':''}${isToday?' today':''}${isSelected?' selected-day':''}" aria-label="Sélectionner le ${dateStr}" aria-pressed="${isSelected}" onclick="selectJournalDate('${dateStr}')">${d}</button>`;
   }
   document.getElementById('cal-grid').innerHTML=grid;
+  renderMuscleVolume();
 
   // Afficher uniquement les séances terminées du mois sélectionné.
   const monthSessions=completedSessions
@@ -1089,7 +1161,6 @@ function renderJournal(){
 }
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderJournal();}
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderJournal();}
-function selectJournalDate(date){journalSelectedDate=date;renderJournal();}
 function scrollToDate(date){
   const els=document.querySelectorAll(`[id^="sess-${date}"]`);
   if(els.length)els[0].scrollIntoView({behavior:'smooth',block:'start'});
