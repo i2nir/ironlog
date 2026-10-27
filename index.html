@@ -504,8 +504,8 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.5';
-const LNRLOG_MODIFIED_AT = '2026-10-27 18:42 (heure du Québec)';
+const LNRLOG_VERSION = '1.6';
+const LNRLOG_MODIFIED_AT = '2026-10-27 18:38 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
 }
@@ -1120,11 +1120,13 @@ function renderJournal(){
   const DAY_FR=['Di','Lu','Ma','Me','Je','Ve','Sa'];
   document.getElementById('cal-month-label').textContent=MONTH_FR[calMonth]+' '+calYear;
 
-  // Seules les séances terminées colorent le calendrier.
-  // Les anciennes entrées sans propriété draft sont considérées comme terminées.
-  const completedSessions=sessions.filter(s=>!s.draft);
+  // Une séance enregistrée en brouillon peut déjà contenir un entraînement réellement effectué.
+  // On l'affiche dans le calendrier dès qu'au moins une série de travail est marquée comme faite.
+  // Les anciennes entrées sans propriété draft restent considérées comme terminées.
+  const hasCompletedWorkSet=s=>(s.exercises||[]).some(ex=>(ex.sets||[]).some(set=>set.done===true));
+  const calendarSessions=sessions.filter(s=>!s.draft||hasCompletedWorkSet(s));
   const dateMap={};
-  completedSessions.forEach(s=>{dateMap[s.date]=(dateMap[s.date]||[]).concat(s);});
+  calendarSessions.forEach(s=>{dateMap[s.date]=(dateMap[s.date]||[]).concat(s);});
 
   // Calendar grid
   const firstDay=new Date(calYear,calMonth,1);
@@ -1144,8 +1146,8 @@ function renderJournal(){
   document.getElementById('cal-grid').innerHTML=grid;
   renderMuscleVolume();
 
-  // Afficher uniquement les séances terminées du mois sélectionné.
-  const monthSessions=completedSessions
+  // Afficher les séances terminées et les brouillons contenant au moins une série réellement faite.
+  const monthSessions=calendarSessions
     .filter(s=>s.date.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
     .sort((a,b)=>b.date.localeCompare(a.date));
 
