@@ -504,8 +504,8 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.6';
-const LNRLOG_MODIFIED_AT = '2026-10-27 18:38 (heure du Québec)';
+const LNRLOG_VERSION = '1.7';
+const LNRLOG_MODIFIED_AT = '2026-10-27 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
 }
@@ -1066,22 +1066,32 @@ function renderMuscleVolume(){
   const selected=dateFromISODate(journalSelectedDate||today());
   let startDate,endDate;
   if(musclePeriod==='7'){
-    startDate=new Date(selected);startDate.setDate(selected.getDate()-selected.getDay()); // dimanche
-    endDate=new Date(startDate);endDate.setDate(startDate.getDate()+6); // samedi
+    // La semaine sélectionnée est toujours du dimanche au samedi,
+    // en fonction de la date cliquée dans le calendrier.
+    startDate=new Date(selected);
+    startDate.setDate(selected.getDate()-selected.getDay());
+    endDate=new Date(startDate);
+    endDate.setDate(startDate.getDate()+6);
   }else{
     endDate=new Date(selected);
     startDate=new Date(selected);
     startDate.setDate(selected.getDate()-(Number(musclePeriod)-1));
   }
-  startDate.setHours(0,0,0,0);endDate.setHours(23,59,59,999);
+  const toISODate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const startISO=toISODate(startDate),endISO=toISODate(endDate);
   const counts={};Object.keys(groups).forEach(g=>counts[g]=0);
-  const completed=sessions.filter(sess=>!sess.draft);
-  completed.filter(sess=>{
-    const d=dateFromISODate(sess.date||'');
-    return !isNaN(d)&&d>=startDate&&d<=endDate;
+  // Compter les séances terminées ainsi que les brouillons où au moins une
+  // série de travail est cochée, comme dans les jours visibles du calendrier.
+  const hasCompletedWorkSet=s=>(s.exercises||[]).some(ex=>(ex.sets||[]).some(st=>st.done===true&&!st.warmup&&!st.isWarmup));
+  const included=sessions.filter(sess=>!sess.draft||hasCompletedWorkSet(sess));
+  included.filter(sess=>{
+    const date=sess.date||'';
+    return /^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=startISO&&date<=endISO;
   }).forEach(sess=>(sess.exercises||[]).forEach(ex=>{
     const name=canonicalExerciseName(ex.name||'');
-    const n=(ex.sets||[]).filter(st=>!st.warmup&&!st.isWarmup).length;
+    const workSets=(ex.sets||[]).filter(st=>!st.warmup&&!st.isWarmup);
+    const countedSets=sess.draft?workSets.filter(st=>st.done===true):workSets;
+    const n=countedSets.length;
     Object.entries(groups).forEach(([g,names])=>{if(names.some(x=>canonicalExerciseName(x)===name))counts[g]+=n;});
   }));
   const total=Object.values(counts).reduce((a,n)=>a+n,0);
