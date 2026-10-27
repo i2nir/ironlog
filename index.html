@@ -190,6 +190,7 @@ button,input,select{touch-action:manipulation;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
 .cal-day-name{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;text-transform:uppercase;}
 .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:14px;font-weight:500;cursor:default;position:relative;}
+.cal-cell.selected-date{outline:2px solid var(--accent);outline-offset:1px;font-weight:800;}
 .cal-cell.has-session{background:var(--blue);color:#fff;cursor:pointer;}
 .cal-cell.has-session:hover{background:var(--blue-dark);}
 .cal-cell.today{box-shadow:0 0 0 2px var(--blue);}
@@ -544,6 +545,7 @@ const DAYS=[
 
 let curDay=0, state={}, sessions=[];
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let journalSelectedDate=today();
 let chartInstance=null;
 
 try{sessions=JSON.parse(localStorage.getItem('il_v2')||'[]');if(!Array.isArray(sessions))sessions=[]}catch{sessions=[]}
@@ -1004,8 +1006,12 @@ function renderStatsPanel(){
 function renderMuscleVolume(){
   const el=document.getElementById('muscle-volume-panel');if(!el)return;
   const completed=sessions.filter(s=>!s.draft);
-  const now=new Date();const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-6);
-  const recent=completed.filter(s=>{const d=new Date((s.date||'')+'T12:00:00');return !isNaN(d)&&d>=cutoff&&d<=new Date(now.getTime()+86400000)});
+  const selected=new Date((journalSelectedDate||today())+'T12:00:00');
+  const weekStart=new Date(selected);weekStart.setDate(selected.getDate()-selected.getDay());weekStart.setHours(0,0,0,0);
+  const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);weekEnd.setHours(23,59,59,999);
+  const recent=completed.filter(s=>{const d=new Date((s.date||'')+'T12:00:00');return !isNaN(d)&&d>=weekStart&&d<=weekEnd;});
+  const dateLabel=d=>d.toLocaleDateString('fr-CA',{day:'numeric',month:'short'});
+  const rangeLabel=`${dateLabel(weekStart)} – ${dateLabel(weekEnd)}`;
   const groups={
     'Pectoraux':['dumbbell bench press','incline dumbbell press','chest press','machine fly'],
     'Dos':['neutral-grip seated cable row','neutral-grip lat pulldown','t-bar row'],
@@ -1024,7 +1030,7 @@ function renderMuscleVolume(){
     const n=(ex.sets||[]).filter(st=>!st.warmup && !st.isWarmup).length;
     Object.entries(groups).forEach(([g,names])=>{if(names.some(x=>canonicalExerciseName(x)===name))counts[g]+=n;});
   }));
-  el.innerHTML=`<section class="muscle-volume-card"><div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">Tes séries de travail des 7 derniers jours</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div><div class="muscle-volume-grid">${Object.entries(counts).map(([g,n])=>{const pct=Math.min(100,Math.round(n/20*100));const status=n>=10?'Dans la cible':n>0?'À développer':'Pas encore travaillé';return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> / 20 séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=10?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${n<10?`${10-n} pour atteindre 10`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible'}</span></div></div>`}).join('')}</div><div class="stats-note">Repère indicatif pour l’hypertrophie : 10 à 20 séries par semaine. Comptage des séries directes reconnues; contributions indirectes et échauffements exclus.</div></section>`;
+  el.innerHTML=`<section class="muscle-volume-card"><div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">Semaine du ${rangeLabel} · ${recent.length} séance(s) terminée(s)</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div><div class="muscle-volume-grid">${Object.entries(counts).map(([g,n])=>{const pct=Math.min(100,Math.round(n/20*100));const status=n>=10?'Dans la cible':n>0?'À développer':'Pas encore travaillé';return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> / 20 séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=10?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${n<10?`${10-n} pour atteindre 10`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible'}</span></div></div>`}).join('')}</div><div class="stats-note">Repère indicatif pour l’hypertrophie : 10 à 20 séries par semaine. Comptage des séries directes reconnues; contributions indirectes et échauffements exclus.</div></section>`;
 }
 
 function renderJournal(){
@@ -1051,7 +1057,8 @@ function renderJournal(){
     const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const hasSess=!!dateMap[dateStr];
     const isToday=dateStr===todayStr;
-    grid+=`<div class="cal-cell${hasSess?' has-session':''}${isToday?' today':''}" ${hasSess?`onclick="scrollToDate('${dateStr}')"`:''}>${d}</div>`;
+    const isSelected=dateStr===journalSelectedDate;
+    grid+=`<div class="cal-cell${hasSess?' has-session':''}${isToday?' today':''}${isSelected?' selected-date':''}" role="button" tabindex="0" aria-label="Sélectionner le ${d}" onclick="selectJournalDate('${dateStr}')">${d}</div>`;
   }
   document.getElementById('cal-grid').innerHTML=grid;
 
@@ -1082,6 +1089,7 @@ function renderJournal(){
 }
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderJournal();}
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderJournal();}
+function selectJournalDate(date){journalSelectedDate=date;renderJournal();}
 function scrollToDate(date){
   const els=document.querySelectorAll(`[id^="sess-${date}"]`);
   if(els.length)els[0].scrollIntoView({behavior:'smooth',block:'start'});
