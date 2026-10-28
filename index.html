@@ -522,7 +522,7 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.9';
+const LNRLOG_VERSION = '2.0';
 const LNRLOG_MODIFIED_AT = '2026-10-28 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
@@ -1147,9 +1147,17 @@ function renderMuscleVolume(){
   const startISO=toISODate(startDate),endISO=toISODate(endDate);
   const counts={};Object.keys(groups).forEach(g=>counts[g]=0);
   let cardioMinutes=0;
-  sessions.filter(sess=>sess.day==='cardio'&&sess.cardio).filter(sess=>{
+  // Tolérer les variantes de structure des séances cardio déjà enregistrées
+  // (version actuelle et anciennes sauvegardes/imports).
+  sessions.filter(sess=>{
+    const day=String(sess.day??'').toLowerCase();
+    return !!sess.cardio || day==='cardio' || day.includes('cardio') || String(sess.dayLabel||'').toLowerCase().includes('cardio');
+  }).filter(sess=>{
     const date=sess.date||'';return /^\\d{4}-\\d{2}-\\d{2}$/.test(date)&&date>=startISO&&date<=endISO;
-  }).forEach(sess=>cardioMinutes+=Math.max(0,Number(sess.cardio.minutes)||0));
+  }).forEach(sess=>{
+    const minutes=Number(sess.cardio?.minutes ?? sess.cardio?.duration ?? sess.minutes ?? sess.duration ?? 0);
+    cardioMinutes+=Math.max(0,Number.isFinite(minutes)?minutes:0);
+  });
   // Compter les séances terminées ainsi que les brouillons où au moins une
   // série de travail est cochée, comme dans les jours visibles du calendrier.
   const hasCompletedWorkSet=s=>(s.exercises||[]).some(ex=>(ex.sets||[]).some(st=>st.done===true&&!st.warmup&&!st.isWarmup));
@@ -1177,7 +1185,7 @@ function renderMuscleVolume(){
   const cardioPct=Math.min(100,Math.round(cardioMinutes/60*100));
   const cardioRow=`<div class="muscle-volume-item cardio-muscle-row"><div class="muscle-volume-item-top"><span class="muscle-volume-name">❤️ Cardio</span><strong>${cardioMinutes}<small> / 60 min</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill" style="width:${cardioPct}%"></div></div><div class="muscle-volume-item-bottom"><span>${cardioMinutes>=60?'Objectif atteint':cardioMinutes>0?'À compléter':'Pas encore travaillé'}</span><span>${Math.max(0,60-cardioMinutes)} min restantes</span></div></div>`;
   el.innerHTML=`<section class="muscle-volume-card">
-    <div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">${periodLabel} · séances terminées</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div>
+    <div class="muscle-volume-heading"><div><div class="stats-section-title">Séries par groupe musculaire</div><div class="muscle-volume-subtitle">${periodLabel} · séances terminées</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div>
     <div class="muscle-volume-summary"><div><span class="muscle-volume-summary-label">Séries comptées</span><strong>${total}</strong></div><div><span class="muscle-volume-summary-label">Groupe(s) suivi(s)</span><strong>${Object.keys(groups).length}</strong></div></div>
     <div class="muscle-volume-controls">
       <label>Période<select aria-label="Période des statistiques" onchange="setMusclePeriod(this.value)"><option value="7" ${musclePeriod==='7'?'selected':''}>Semaine sélectionnée</option><option value="14" ${musclePeriod==='14'?'selected':''}>14 jours jusqu’à la date</option><option value="30" ${musclePeriod==='30'?'selected':''}>30 jours jusqu’à la date</option></select></label>
