@@ -368,6 +368,22 @@ input,select,textarea{accent-color:var(--blue);}
 .ex-heading-content .ex-meta{margin-top:8px;}
 .ex-add{align-self:center;width:36px;height:36px;font-size:22px;}
 @media(max-width:380px){.exercise-thumb{width:76px;height:70px;flex-basis:76px}.ex-header{gap:9px;padding:11px}.ex-name{font-size:15px}.tab{gap:5px;font-size:13px}}
+/* Séance cardio et repère calendrier */
+.cardio-panel{margin:0 12px 14px;padding:17px;background:#10171C;border:1px solid #263744;border-radius:17px}
+.cardio-title{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;margin-bottom:8px}
+.cardio-title i{font-size:26px;color:#FF656D}
+.cardio-desc{font-size:13px;color:#91A5B5;margin-bottom:16px;line-height:1.45}
+.cardio-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cardio-fields label{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#A5B4C1}
+.cardio-fields select,.cardio-fields input{width:100%;min-width:0;padding:12px;border:1px solid #2D3B45;border-radius:11px;background:#151F26;color:#F3F7FA;font-size:15px}
+.cardio-save{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:#1685FF;color:white;font-size:15px;font-weight:700;cursor:pointer}
+.cardio-status{font-size:12px;color:#91A5B5;margin-top:10px}
+.cal-cell.has-cardio::after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#FF454F;border:1px solid #fff;right:3px;top:3px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.cal-cell.has-cardio:not(.has-session){background:#351C22;color:#fff;cursor:pointer}
+.cal-cell.has-session.has-cardio::after{width:8px;height:8px;right:3px;top:3px}
+.cardio-muscle-row{border-color:#7D3038;background:#21171B}
+.cardio-muscle-row .muscle-volume-fill{background:#FF656D}
+
 
 
 /* Prototype intégré : bilan musculaire interactif du journal */
@@ -430,6 +446,7 @@ input,select,textarea{accent-color:var(--blue);}
   </div>
   <div class="autosave-status" id="autosave-status" role="status" aria-live="polite">Sauvegarde automatique activée</div>
 <div id="exercises-list"></div>
+  <div id="cardio-panel" style="display:none"></div>
   <div class="toast" id="toast"></div>
   <div class="save-bar">
     <button class="record-btn" onclick="recordSession()"><i class="ti ti-bookmark" style="font-size:17px"></i>Enregistrer en cours</button>
@@ -504,7 +521,7 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.7';
+const LNRLOG_VERSION = '1.8';
 const LNRLOG_MODIFIED_AT = '2026-10-27 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
@@ -591,7 +608,7 @@ const initialQuebecDate=quebecDateParts();
 let calYear=initialQuebecDate.year, calMonth=initialQuebecDate.month-1;
 let journalSelectedDate=today();
 let musclePeriod='7', muscleGoal=10, muscleFilter='all';
-let chartInstance=null;
+let chartInstance=null, showCardio=false;
 
 try{sessions=JSON.parse(localStorage.getItem('il_v2')||'[]');if(!Array.isArray(sessions))sessions=[]}catch{sessions=[]}
 let autoDrafts={};
@@ -672,7 +689,7 @@ if(exerciseNamesNormalized)save();
 
 document.getElementById('session-date').value=today();
 buildState(0);restoreDraft(0,today());renderDayTabs();renderExercises();renderHistFilter();
-document.getElementById('session-date').addEventListener('change',()=>{const d=document.getElementById('session-date').value||today();buildState(curDay);restoreDraft(curDay,d);renderExercises();persistDraft();});
+document.getElementById('session-date').addEventListener('change',()=>{const d=document.getElementById('session-date').value||today();buildState(curDay);restoreDraft(curDay,d);renderExercises();if(showCardio)renderCardioPanel();persistDraft();});
 
 function getLastWorkSetsForDay(exName,day){
   const ordered=[...sessions].filter(s=>s.day===day&&!s.draft).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.ts||0)-(a.ts||0));
@@ -722,9 +739,14 @@ function renderDayTabs(){
     const div=document.createElement('div');
     div.className='day-tab'+(i===curDay?' active':'');
     div.innerHTML=`<span class="icon" aria-hidden="true">${d.icon.startsWith('data:image/')?`<img class=\"day-muscle-icon\" src=\"${d.icon}\" alt=\"Muscles ciblés\">`:d.icon}</span><div class="dlabel">${d.label}</div><div class="dsub">${d.sub}</div>`;
-    div.onclick=()=>{persistDraft();curDay=i;const date=document.getElementById('session-date').value||today();buildState(i);restoreDraft(i,date);renderDayTabs();renderExercises();persistDraft();};
+    div.onclick=()=>{showCardio=false;persistDraft();curDay=i;const date=document.getElementById('session-date').value||today();buildState(i);restoreDraft(i,date);renderDayTabs();renderExercises();persistDraft();};
     wrap.appendChild(div);
   });
+  const cardioTab=document.createElement('div');
+  cardioTab.className='day-tab'+(showCardio?' active':'');
+  cardioTab.innerHTML='<span class="icon" aria-hidden="true" style="color:#FF656D"><i class="ti ti-heart-rate-monitor"></i></span><div class="dlabel">Cardio</div><div class="dsub">Endurance</div>';
+  cardioTab.onclick=()=>{persistDraft();showCardio=true;renderDayTabs();renderExercises();renderCardioPanel();};
+  wrap.appendChild(cardioTab);
 }
 
 // ─── RECOMMENDATION ─────────────────────────────────────
@@ -792,7 +814,13 @@ function updateRecoBlock(enc){
 
 // ─── RENDER EXERCISES ────────────────────────────────────
 function renderExercises(){
-  const wrap=document.getElementById('exercises-list');wrap.innerHTML='';
+  const wrap=document.getElementById('exercises-list');
+  const cardioPanel=document.getElementById('cardio-panel');
+  const saveBar=document.querySelector('#view-seance .save-bar');
+  if(showCardio){
+    wrap.style.display='none';saveBar.style.display='none';cardioPanel.style.display='block';renderCardioPanel();return;
+  }
+  wrap.style.display='';saveBar.style.display='';cardioPanel.style.display='none';wrap.innerHTML='';
 
   DAYS[curDay].exercises.forEach(ex=>{
     const st=state[ex.n];
@@ -872,6 +900,42 @@ function addSet(enc,type='work'){
 function delSet(enc,type,si){
   const n=decodeURIComponent(enc);if(!state[n])return;
   state[n][type].splice(si,1);renderExercises();persistDraft();
+}
+
+// ─── CARDIO ─────────────────────────────────────────────
+function renderCardioPanel(){
+  const el=document.getElementById('cardio-panel');if(!el)return;
+  const date=document.getElementById('session-date').value||today();
+  const existing=sessions.find(x=>x.date===date&&x.day==='cardio'&&x.cardio);
+  const c=existing?.cardio||{};
+  el.innerHTML=`<section class="cardio-panel">
+    <div class="cardio-title"><i class="ti ti-heart-rate-monitor"></i> Séance cardio</div>
+    <div class="cardio-desc">Choisis l'appareil, indique la durée en minutes, puis enregistre la séance. Le calendrier affichera un point rouge.</div>
+    <div class="cardio-fields">
+      <label>Appareil
+        <select id="cardio-equipment">
+          <option value="Elliptique" ${c.equipment==='Elliptique'?'selected':''}>Elliptique</option>
+          <option value="Tapis roulant" ${c.equipment==='Tapis roulant'?'selected':''}>Tapis roulant</option>
+          <option value="Vélo" ${c.equipment==='Vélo'?'selected':''}>Vélo</option>
+        </select>
+      </label>
+      <label>Durée (minutes)
+        <input id="cardio-minutes" type="number" min="1" max="600" step="1" inputmode="numeric" placeholder="Ex. 30" value="${c.minutes||''}">
+      </label>
+    </div>
+    <button class="cardio-save" onclick="saveCardioSession()"><i class="ti ti-check"></i> Enregistrer la séance cardio</button>
+    <div class="cardio-status">${existing?`Séance enregistrée : ${escapeHTML(c.equipment||'Cardio')} · ${Number(c.minutes)||0} min`:'Aucune séance cardio enregistrée pour cette date.'}</div>
+  </section>`;
+}
+function saveCardioSession(){
+  const date=document.getElementById('session-date').value||today();
+  const equipment=document.getElementById('cardio-equipment').value;
+  const minutes=Math.round(Number(document.getElementById('cardio-minutes').value));
+  if(!Number.isFinite(minutes)||minutes<1||minutes>600){showToast('Indique une durée entre 1 et 600 minutes','warn');return;}
+  const entry={date,day:'cardio',dayLabel:'Cardio',ts:Date.now(),exercises:[],cardio:{equipment,minutes}};
+  const idx=sessions.findIndex(x=>x.date===date&&x.day==='cardio'&&x.cardio);
+  if(idx>=0)sessions[idx]=entry;else sessions.push(entry);
+  save();renderCardioPanel();renderHistory();renderJournal();showToast('Séance cardio enregistrée !');
 }
 
 // ─── SAVE SESSION ────────────────────────────────────────
@@ -1080,6 +1144,10 @@ function renderMuscleVolume(){
   const toISODate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const startISO=toISODate(startDate),endISO=toISODate(endDate);
   const counts={};Object.keys(groups).forEach(g=>counts[g]=0);
+  let cardioMinutes=0;
+  sessions.filter(sess=>sess.day==='cardio'&&sess.cardio).filter(sess=>{
+    const date=sess.date||'';return /^\\d{4}-\\d{2}-\\d{2}$/.test(date)&&date>=startISO&&date<=endISO;
+  }).forEach(sess=>cardioMinutes+=Math.max(0,Number(sess.cardio.minutes)||0));
   // Compter les séances terminées ainsi que les brouillons où au moins une
   // série de travail est cochée, comme dans les jours visibles du calendrier.
   const hasCompletedWorkSet=s=>(s.exercises||[]).some(ex=>(ex.sets||[]).some(st=>st.done===true&&!st.warmup&&!st.isWarmup));
@@ -1104,6 +1172,8 @@ function renderMuscleVolume(){
     const remaining=n<muscleGoal?`${muscleGoal-n} série(s) pour atteindre ${muscleGoal}`:n<=20?'Objectif minimal atteint':'Au-dessus de la cible';
     return `<div class="muscle-volume-item"><div class="muscle-volume-item-top"><span class="muscle-volume-name">${g}</span><strong>${n}<small> séries</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill ${n>=muscleGoal?'in-range':''}" style="width:${pct}%"></div></div><div class="muscle-volume-item-bottom"><span>${status}</span><span>${remaining}</span></div></div>`;
   }).join('');
+  const cardioPct=Math.min(100,Math.round(cardioMinutes/60*100));
+  const cardioRow=`<div class="muscle-volume-item cardio-muscle-row"><div class="muscle-volume-item-top"><span class="muscle-volume-name">❤️ Cardio</span><strong>${cardioMinutes}<small> / 60 min</small></strong></div><div class="muscle-volume-track"><div class="muscle-volume-fill" style="width:${cardioPct}%"></div></div><div class="muscle-volume-item-bottom"><span>${cardioMinutes>=60?'Objectif atteint':cardioMinutes>0?'À compléter':'Pas encore travaillé'}</span><span>${Math.max(0,60-cardioMinutes)} min restantes</span></div></div>`;
   el.innerHTML=`<section class="muscle-volume-card">
     <div class="muscle-volume-heading"><div><div class="stats-section-title">💪 Séries par groupe musculaire</div><div class="muscle-volume-subtitle">${periodLabel} · séances terminées</div></div><span class="muscle-volume-goal">Cible : 10–20 / sem.</span></div>
     <div class="muscle-volume-summary"><div><span class="muscle-volume-summary-label">Séries comptées</span><strong>${total}</strong></div><div><span class="muscle-volume-summary-label">Groupe(s) suivi(s)</span><strong>${Object.keys(groups).length}</strong></div></div>
@@ -1112,7 +1182,7 @@ function renderMuscleVolume(){
       <label>Objectif min.<select aria-label="Objectif minimal de séries" onchange="setMuscleGoal(this.value)"><option value="6" ${muscleGoal===6?'selected':''}>6 séries</option><option value="10" ${muscleGoal===10?'selected':''}>10 séries</option><option value="12" ${muscleGoal===12?'selected':''}>12 séries</option></select></label>
     </div>
     <div class="muscle-volume-filters"><button class="${muscleFilter==='all'?'active':''}" onclick="setMuscleFilter('all')">Tous</button><button class="${muscleFilter==='low'?'active':''}" onclick="setMuscleFilter('low')">À renforcer</button><button class="${muscleFilter==='ok'?'active':''}" onclick="setMuscleFilter('ok')">Objectif atteint</button></div>
-    <div class="muscle-volume-grid">${rows||'<div class="muscle-volume-empty">Aucun groupe dans cette catégorie pour la période choisie.</div>'}</div>
+    <div class="muscle-volume-grid">${rows||'<div class="muscle-volume-empty">Aucun groupe dans cette catégorie pour la période choisie.</div>'}${cardioRow}</div>
     <div class="muscle-volume-note"><i class="ti ti-info-circle"></i><span>Les échauffements et les séances en cours sont exclus. Le repère de 10 à 20 séries par semaine est indicatif. Seuls les exercices reconnus et leurs séries de travail directes sont comptés.</span></div>
   </section>`;
 }
@@ -1135,8 +1205,11 @@ function renderJournal(){
   // Les anciennes entrées sans propriété draft restent considérées comme terminées.
   const hasCompletedWorkSet=s=>(s.exercises||[]).some(ex=>(ex.sets||[]).some(set=>set.done===true));
   const calendarSessions=sessions.filter(s=>!s.draft||hasCompletedWorkSet(s));
-  const dateMap={};
-  calendarSessions.forEach(s=>{dateMap[s.date]=(dateMap[s.date]||[]).concat(s);});
+  const dateMap={},cardioDateSet=new Set();
+  calendarSessions.forEach(s=>{
+    if(s.day==='cardio'&&s.cardio)cardioDateSet.add(s.date);
+    else dateMap[s.date]=(dateMap[s.date]||[]).concat(s);
+  });
 
   // Calendar grid
   const firstDay=new Date(calYear,calMonth,1);
@@ -1149,9 +1222,10 @@ function renderJournal(){
   for(let d=1;d<=lastDay.getDate();d++){
     const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const hasSess=!!dateMap[dateStr];
+    const hasCardio=cardioDateSet.has(dateStr);
     const isToday=dateStr===todayStr;
     const isSelected=dateStr===journalSelectedDate;
-    grid+=`<button type="button" class="cal-cell${hasSess?' has-session':''}${isToday?' today':''}${isSelected?' selected-day':''}" aria-label="Sélectionner le ${dateStr}" aria-pressed="${isSelected}" onclick="selectJournalDate('${dateStr}')">${d}</button>`;
+    grid+=`<button type="button" class="cal-cell${hasSess?' has-session':''}${hasCardio?' has-cardio':''}${isToday?' today':''}${isSelected?' selected-day':''}" aria-label="Sélectionner le ${dateStr}${hasCardio?', cardio':''}${hasSess?', musculation':''}" aria-pressed="${isSelected}" onclick="selectJournalDate('${dateStr}')">${d}</button>`;
   }
   document.getElementById('cal-grid').innerHTML=grid;
   renderMuscleVolume();
@@ -1163,20 +1237,18 @@ function renderJournal(){
 
   document.getElementById('journal-sessions').innerHTML=monthSessions.map(sess=>{
     const oi=sessions.indexOf(sess);
-    const totalSets=sess.exercises.reduce((a,e)=>a+(e.sets||[]).length,0);
-    const totalReps=sess.exercises.reduce((a,e)=>a+(e.sets||[]).reduce((b,s)=>b+(s.reps||0),0),0);
+    const totalSets=(sess.exercises||[]).reduce((a,e)=>a+(e.sets||[]).length,0);
+    const totalReps=(sess.exercises||[]).reduce((a,e)=>a+(e.sets||[]).reduce((b,s)=>b+(s.reps||0),0),0);
     return `<div class="session-card" id="sess-${sess.date}-${sess.ts}">
       <div class="session-card-hd">
         <span class="session-card-date">${fmtDate(sess.date)}</span>
         <div style="display:flex;align-items:center;gap:8px">
-          <span class="session-card-day">${sess.dayLabel||''}</span>
+          <span class="session-card-day">${sess.day==='cardio'?'❤️ Cardio':(sess.dayLabel||'')}</span>
           <button class="session-card-del" onclick="deleteSession(${oi})"><i class="ti ti-trash" style="font-size:17px;color:var(--text3)"></i></button>
         </div>
       </div>
       <div class="session-card-stats">
-        <span class="hist-stat"><strong>${sess.exercises.length}</strong> exercices</span>
-        <span class="hist-stat"><strong>${totalSets}</strong> séries</span>
-        <span class="hist-stat"><strong>${totalReps}</strong> reps totales</span>
+        ${sess.day==='cardio'?`<span class="hist-stat"><strong>${escapeHTML(sess.cardio?.equipment||'Cardio')}</strong></span><span class="hist-stat"><strong>${Number(sess.cardio?.minutes)||0}</strong> min</span>`:`<span class="hist-stat"><strong>${(sess.exercises||[]).length}</strong> exercices</span><span class="hist-stat"><strong>${totalSets}</strong> séries</span><span class="hist-stat"><strong>${totalReps}</strong> reps totales</span>`}
       </div>
     </div>`;
   }).join('')||'<div class="empty"><i class="ti ti-calendar-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Aucune séance ce mois</div>';
