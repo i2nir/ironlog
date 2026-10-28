@@ -465,6 +465,7 @@ input,select,textarea{accent-color:var(--blue);}
         <option value="2">Pull</option>
         <option value="3">Upper</option>
         <option value="4">Legs B</option>
+        <option value="cardio">❤️ Cardio</option>
       </select>
       <select id="hf-ex" onchange="renderHistory()"><option value="">Tous les exercices</option></select>
     </div>
@@ -521,8 +522,8 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '1.8';
-const LNRLOG_MODIFIED_AT = '2026-10-27 (heure du Québec)';
+const LNRLOG_VERSION = '1.9';
+const LNRLOG_MODIFIED_AT = '2026-10-28 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
 }
@@ -923,7 +924,7 @@ function renderCardioPanel(){
         <input id="cardio-minutes" type="number" min="1" max="600" step="1" inputmode="numeric" placeholder="Ex. 30" value="${c.minutes||''}">
       </label>
     </div>
-    <button class="cardio-save" onclick="saveCardioSession()"><i class="ti ti-check"></i> Enregistrer la séance cardio</button>
+    <button class="cardio-save" onclick="saveCardioSession()"><i class="ti ti-device-floppy"></i> Sauvegarder la séance</button>
     <div class="cardio-status">${existing?`Séance enregistrée : ${escapeHTML(c.equipment||'Cardio')} · ${Number(c.minutes)||0} min`:'Aucune séance cardio enregistrée pour cette date.'}</div>
   </section>`;
 }
@@ -932,10 +933,10 @@ function saveCardioSession(){
   const equipment=document.getElementById('cardio-equipment').value;
   const minutes=Math.round(Number(document.getElementById('cardio-minutes').value));
   if(!Number.isFinite(minutes)||minutes<1||minutes>600){showToast('Indique une durée entre 1 et 600 minutes','warn');return;}
-  const entry={date,day:'cardio',dayLabel:'Cardio',ts:Date.now(),exercises:[],cardio:{equipment,minutes}};
+  const entry={date,day:'cardio',dayLabel:'❤️ Cardio',ts:Date.now(),draft:false,exercises:[],cardio:{equipment,minutes}};
   const idx=sessions.findIndex(x=>x.date===date&&x.day==='cardio'&&x.cardio);
   if(idx>=0)sessions[idx]=entry;else sessions.push(entry);
-  save();renderCardioPanel();renderHistory();renderJournal();showToast('Séance cardio enregistrée !');
+  if(!save()){showToast('Erreur : impossible de sauvegarder les données','warn');return;}renderHistFilter();renderCardioPanel();renderHistory();renderJournal();showToast('Séance cardio sauvegardée !');
 }
 
 // ─── SAVE SESSION ────────────────────────────────────────
@@ -1029,6 +1030,7 @@ function renderHistory(){
     const oi=sessions.indexOf(sess);
     const exList=exF?sess.exercises.filter(e=>canonicalExerciseName(e.name)===exF):sess.exercises;
     const totalSets=exList.reduce((a,e)=>a+(e.sets||[]).length,0);
+    const isCardio=sess.day==='cardio'&&!!sess.cardio;
     const exHtml=exList.map(ex=>{
       const wuLines=(ex.warmupSets||[]).map((s,i)=>`<div class="hist-set-line">
         <span class="hist-set-num">W${i+1}</span><span class="hist-lb">${s.lb} lb</span><span>× ${s.reps} reps</span>
@@ -1052,8 +1054,8 @@ function renderHistory(){
           <button class="hist-del" onclick="deleteSession(${oi})"><i class="ti ti-trash"></i></button>
         </div>
       </div>
-      <div class="hist-summary"><span class="hist-stat"><strong>${totalSets}</strong> séries</span><span class="hist-stat"><strong>${exList.length}</strong> exercices</span></div>
-      ${exHtml}
+      <div class="hist-summary">${isCardio?`<span class="hist-stat"><strong>${escapeHTML(sess.cardio.equipment||'Cardio')}</strong></span><span class="hist-stat"><strong>${Number(sess.cardio.minutes)||0} min</strong></span>`:`<span class="hist-stat"><strong>${totalSets}</strong> séries</span><span class="hist-stat"><strong>${exList.length}</strong> exercices</span>`}</div>
+      ${isCardio?`<div class="hist-ex"><div class="hist-ex-name">❤️ Séance cardio</div><div class="hist-set-line"><span>${escapeHTML(sess.cardio.equipment||'Cardio')}</span><span class="hist-lb">${Number(sess.cardio.minutes)||0} minutes</span></div></div>`:exHtml}
     </div>`;
   }).join('');
 }
