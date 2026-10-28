@@ -522,7 +522,7 @@ input,select,textarea{accent-color:var(--blue);}
 
 <script>
 // Version du fichier HTML : incrémenter à chaque nouvelle modification du fichier.
-const LNRLOG_VERSION = '2.0';
+const LNRLOG_VERSION = '2.1';
 const LNRLOG_MODIFIED_AT = '2026-10-28 (heure du Québec)';
 function showAppInfo(){
   alert('LnrLog\nVersion : '+LNRLOG_VERSION+'\nDate et heure de modification : '+LNRLOG_MODIFIED_AT);
@@ -1153,7 +1153,7 @@ function renderMuscleVolume(){
     const day=String(sess.day??'').toLowerCase();
     return !!sess.cardio || day==='cardio' || day.includes('cardio') || String(sess.dayLabel||'').toLowerCase().includes('cardio');
   }).filter(sess=>{
-    const date=sess.date||'';return /^\\d{4}-\\d{2}-\\d{2}$/.test(date)&&date>=startISO&&date<=endISO;
+    const date=sess.date||'';return /^\d{4}-\d{2}-\d{2}$/.test(date)&&date>=startISO&&date<=endISO;
   }).forEach(sess=>{
     const minutes=Number(sess.cardio?.minutes ?? sess.cardio?.duration ?? sess.minutes ?? sess.duration ?? 0);
     cardioMinutes+=Math.max(0,Number.isFinite(minutes)?minutes:0);
